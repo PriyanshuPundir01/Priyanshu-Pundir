@@ -1,0 +1,21 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Binary files - prevent CRLF conversion
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+# Web files
+*.svg text
+*.html text
+*.css text
+*.js text
+*.ts text
+*.tsx text
+*.json text
+*.md text
