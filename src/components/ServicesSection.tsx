@@ -23,18 +23,24 @@ const servicesData: ServiceItem[] = [
   },
   {
     number: '03',
-    name: 'AI & RAG Solutions',
+    name: 'Agentic AI & RAG Architecture',
     description:
-      'Deploying enterprise Retrieval-Augmented Generation (RAG) platforms using LangChain, Streamlit, NVIDIA embeddings, and ChromaDB vector search.',
+      'Deploying autonomous agentic workflows, multi-agent systems, and enterprise Retrieval-Augmented Generation (RAG) platforms using LangChain, LangGraph, NVIDIA embeddings, and ChromaDB vector search.',
   },
   {
     number: '04',
+    name: 'Model Context Protocol (MCP) Server Integration',
+    description:
+      'Designing and deploying custom Model Context Protocol (MCP) servers and clients, bridging LLMs and autonomous agents securely with local tools, enterprise APIs, and contextual data sources.',
+  },
+  {
+    number: '05',
     name: 'Mobile & Cyber Security',
     description:
       'Building native Android apps with Biometric API authentication and implementing cryptographic security protocols including AES-256 encryption.',
   },
   {
-    number: '05',
+    number: '06',
     name: 'Software Testing and Database Validation',
     description:
       'Automating SQL queries for data quality audits across production databases and executing rigorous functional and regression testing cycles.',
@@ -49,7 +55,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onServiceSelec
   return (
     <section
       id="services"
-      className="bg-[#FFFFFF] text-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-0"
+      className="bg-[#FFFFFF] text-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-0 border-t border-slate-200/60 dark:border-transparent shadow-xl dark:shadow-none transition-colors duration-300"
     >
       <div className="max-w-5xl mx-auto w-full">
         {/* Heading */}

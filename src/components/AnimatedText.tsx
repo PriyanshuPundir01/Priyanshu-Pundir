@@ -53,9 +53,8 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({
   return (
     <p
       ref={containerRef}
-      className={`text-center font-medium leading-relaxed ${className}`}
+      className={`text-center font-medium leading-relaxed text-[#0F172A] dark:text-[#D7E2EA] transition-colors duration-200 ${className}`}
       style={{
-        color: '#D7E2EA',
         fontSize: 'clamp(1rem, 2vw, 1.35rem)',
       }}
     >

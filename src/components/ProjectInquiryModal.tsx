@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -7,6 +7,7 @@ import {
   Cpu,
   Shield,
   Database,
+  Network,
   Send,
   Mail,
   Phone,
@@ -15,12 +16,9 @@ import {
   Download,
   ExternalLink,
   ChevronDown,
-  Hash,
-  DollarSign,
-  FileText,
+  IndianRupee,
   Sparkles,
-  ArrowRight,
-  Clock,
+  Search,
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
@@ -56,18 +54,28 @@ export const PORTFOLIO_SERVICES: ServiceOption[] = [
     techTags: ['Python', 'Java', 'C++', 'FastAPI', 'MySQL', 'RESTful APIs'],
   },
   {
-    id: 'ai-rag-solutions',
+    id: 'agentic-ai-rag-architecture',
     number: '03',
-    title: 'AI & RAG Solutions',
+    title: 'Agentic AI & RAG Architecture',
     category: 'INTELLIGENCE PLATFORMS',
     shortDesc:
-      'Deploying enterprise Retrieval-Augmented Generation (RAG) platforms using LangChain, Streamlit, NVIDIA embeddings, and ChromaDB vector search.',
+      'Deploying autonomous agentic workflows, multi-agent systems, and enterprise Retrieval-Augmented Generation (RAG) platforms using LangChain, LangGraph, NVIDIA embeddings, and ChromaDB vector search.',
     icon: Cpu,
-    techTags: ['LangChain', 'ChromaDB', 'NVIDIA Embeddings', 'Vector Search', 'Python', 'Streamlit'],
+    techTags: ['Agentic AI', 'LangChain', 'LangGraph', 'ChromaDB', 'NVIDIA Embeddings', 'Vector Search'],
+  },
+  {
+    id: 'mcp-server-integration',
+    number: '04',
+    title: 'Model Context Protocol (MCP) Server Integration',
+    category: 'MCP & PROTOCOL BRIDGES',
+    shortDesc:
+      'Designing and deploying custom Model Context Protocol (MCP) servers and clients, bridging LLMs and autonomous agents securely with local tools, enterprise APIs, and contextual data sources.',
+    icon: Network,
+    techTags: ['MCP Protocol', 'Custom MCP Servers', 'JSON-RPC', 'LLM Tool Calling', 'Context Bridges', 'Python / TS SDK'],
   },
   {
     id: 'mobile-cyber-security',
-    number: '04',
+    number: '05',
     title: 'Mobile & Cyber Security',
     category: 'SECURITY & MOBILE',
     shortDesc:
@@ -77,7 +85,7 @@ export const PORTFOLIO_SERVICES: ServiceOption[] = [
   },
   {
     id: 'software-testing-database-validation',
-    number: '05',
+    number: '06',
     title: 'Software Testing and Database Validation',
     category: 'QUALITY ASSURANCE',
     shortDesc:
@@ -87,11 +95,38 @@ export const PORTFOLIO_SERVICES: ServiceOption[] = [
   },
 ];
 
-const SUGGESTED_BUDGETS = [
-  '<$1,500 (Rapid MVP)',
-  '$1,500 – $3,500 (Production System)',
-  '$3,500 – $7,500 (Enterprise Scale)',
-  '$7,500+ (Full Suite & Retainer)',
+export interface BudgetTier {
+  id: string;
+  range: string;
+  tag: string;
+  value: string;
+}
+
+export const BUDGET_TIERS: BudgetTier[] = [
+  {
+    id: 'tier-1',
+    range: '₹10,000 – ₹20,000',
+    tag: 'Quick MVP / Landing Page',
+    value: '₹10,000 – ₹20,000 (Quick MVP / Landing Page)',
+  },
+  {
+    id: 'tier-2',
+    range: '₹20,000 – ₹45,000',
+    tag: 'Full-Stack Web App',
+    value: '₹20,000 – ₹45,000 (Full-Stack Web App)',
+  },
+  {
+    id: 'tier-3',
+    range: '₹45,000 – ₹80,000',
+    tag: 'AI & Custom Architecture',
+    value: '₹45,000 – ₹80,000 (AI & Custom Architecture)',
+  },
+  {
+    id: 'tier-4',
+    range: '₹80,000+',
+    tag: 'Enterprise / Retainer',
+    value: '₹80,000+ (Enterprise / Retainer)',
+  },
 ];
 
 interface ProjectInquiryModalProps {
@@ -105,47 +140,73 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
   onClose,
   initialService,
 }) => {
-  // 1. Service Selection State (combines dropdown + editable field)
+  // 1. Service Selection State (Unified Combobox)
   const defaultService = PORTFOLIO_SERVICES[0].title;
-  const [selectedDropdownService, setSelectedDropdownService] = useState<string>(
+  const [serviceInput, setServiceInput] = useState<string>(
     initialService || defaultService
   );
-  const [editableService, setEditableService] = useState<string>(
-    initialService || defaultService
-  );
+  const [isComboboxOpen, setIsComboboxOpen] = useState<boolean>(false);
+  const comboboxRef = useRef<HTMLDivElement>(null);
 
-  // 2. Input Fields
+  // 2. Input Fields (Clean defaults, no hardcoded developer values)
   const [name, setName] = useState<string>('');
   const [workEmail, setWorkEmail] = useState<string>('');
   const [contactNumber, setContactNumber] = useState<string>('');
-  const [budget, setBudget] = useState<string>('$1,500 – $3,500 (Production System)');
+  const [selectedBudget, setSelectedBudget] = useState<string>(
+    '₹20,000 – ₹45,000 (Full-Stack Web App)'
+  );
   const [projectDescription, setProjectDescription] = useState<string>('');
 
-  // 3. Sequentially Incrementing Receipt Number
-  const [receiptNumber, setReceiptNumber] = useState<number>(() => {
-    const saved = localStorage.getItem('priyanshu_portfolio_receipt_seq');
-    if (saved) {
-      const parsed = parseInt(saved, 10);
-      return !isNaN(parsed) && parsed >= 1001 ? parsed : 1001;
+  // Helper to fetch latest persistent receipt sequence
+  const getLatestReceiptSeq = (): number => {
+    try {
+      const saved = localStorage.getItem('priyanshu_portfolio_receipt_seq');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 1001) return parsed;
+      }
+    } catch {
+      // LocalStorage access fallback
     }
     return 1001;
-  });
+  };
+
+  // 3. Sequentially Incrementing Receipt Number (Internal / PDF export only)
+  const [receiptNumber, setReceiptNumber] = useState<number>(() => getLatestReceiptSeq());
 
   // 4. Modal and feedback state
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [issuedReceiptId, setIssuedReceiptId] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
+  // Check if current budget is a custom user-typed entry
+  const isCustomBudget =
+    Boolean(selectedBudget.trim()) &&
+    !BUDGET_TIERS.some(
+      (t) => selectedBudget === t.value || selectedBudget === t.range
+    );
+
+  // Close combobox when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
+        setIsComboboxOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Sync initialService when provided or modal opened
   useEffect(() => {
     if (isOpen) {
       if (initialService) {
-        setSelectedDropdownService(initialService);
-        setEditableService(initialService);
+        setServiceInput(initialService);
       }
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      setIsComboboxOpen(false);
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -159,23 +220,27 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
     };
   }, [isOpen, initialService, onClose]);
 
-  // Handle dropdown selection: updates both the dropdown state and editable field
-  const handleDropdownChange = (serviceTitle: string) => {
-    setSelectedDropdownService(serviceTitle);
-    setEditableService(serviceTitle);
-  };
-
   // Select service via card click
   const handleCardClick = (serviceTitle: string) => {
-    setSelectedDropdownService(serviceTitle);
-    setEditableService(serviceTitle);
+    setServiceInput(serviceTitle);
+    setIsComboboxOpen(false);
   };
 
-  // Generate and Download PDF Receipt
+  // Filtered services for Combobox
+  const filteredServices = PORTFOLIO_SERVICES.filter((srv) => {
+    const query = serviceInput.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      srv.title.toLowerCase().includes(query) ||
+      srv.category.toLowerCase().includes(query) ||
+      srv.techTags.some((tag) => tag.toLowerCase().includes(query))
+    );
+  });
+
+  // Generate and Automatically Download PDF Receipt
   const generateReceiptPDF = (
     currentSeqNum: number,
-    receiptServiceName: string,
-    isManualPreview = false
+    receiptServiceName: string
   ) => {
     try {
       const doc = new jsPDF({
@@ -216,11 +281,11 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       );
       doc.text('Portfolio: https://priyanshupundir.dev | GitHub: github.com/PriyanshuPundir01', 16, 34.5);
 
-      // Top Right: Unique Sequential Receipt Number
+      // Top Right: Unique Sequential Receipt Number (Inside PDF receipt only)
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.setTextColor(255, 255, 255);
-      doc.text(isManualPreview ? 'INQUIRY RECEIPT (DRAFT PREVIEW)' : 'OFFICIAL INQUIRY RECEIPT', 194, 16, {
+      doc.text('OFFICIAL INQUIRY RECEIPT', 194, 16, {
         align: 'right',
       });
 
@@ -317,7 +382,9 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       doc.text('Budget Allocation:', 18, y);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(budget.trim() || 'Flexible / To be discussed', 62, y);
+      // Format budget for PDF: replace ₹ with INR to ensure crisp font rendering across standard PDF viewers
+      const formattedPdfBudget = (selectedBudget.trim() || 'Flexible / To be discussed').replace(/₹/g, 'INR ');
+      doc.text(formattedPdfBudget, 62, y);
 
       y += 14;
 
@@ -404,7 +471,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       setErrorMessage('Please provide a contact phone / WhatsApp number.');
       return;
     }
-    if (!budget.trim()) {
+    if (!selectedBudget.trim()) {
       setErrorMessage('Please specify an estimated project budget.');
       return;
     }
@@ -413,41 +480,40 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       return;
     }
 
-    const currentSeq = receiptNumber;
+    // Always use the latest sequence from storage or state to guarantee non-reusable unique numbers
+    const currentSeq = Math.max(receiptNumber, getLatestReceiptSeq());
     const formattedId = `REC-${currentSeq}`;
     setIssuedReceiptId(formattedId);
 
-    const finalService = editableService.trim() || selectedDropdownService || defaultService;
-
-    // 1. Download official PDF receipt
-    generateReceiptPDF(currentSeq, finalService, false);
-
-    // 2. Increment sequential receipt number and persist in localStorage
+    // Crucial: Increment sequence immediately by +1 and persist so currentSeq can NEVER be used again
     const nextSeq = currentSeq + 1;
     setReceiptNumber(nextSeq);
-    localStorage.setItem('priyanshu_portfolio_receipt_seq', nextSeq.toString());
+    try {
+      localStorage.setItem('priyanshu_portfolio_receipt_seq', nextSeq.toString());
+    } catch (err) {
+      console.error('Failed to update receipt sequence in localStorage:', err);
+    }
 
-    // 3. Switch to success screen
+    const finalService = serviceInput.trim() || defaultService;
+
+    // 1. Automatically generate and download official PDF receipt onto user's system
+    generateReceiptPDF(currentSeq, finalService);
+
+    // 2. Switch to success screen
     setIsSubmitted(true);
-  };
-
-  // Manual Draft Download (allows user to test PDF receipt right away)
-  const handleManualDownloadPreview = () => {
-    const finalService = editableService.trim() || selectedDropdownService || defaultService;
-    generateReceiptPDF(receiptNumber, finalService, true);
   };
 
   // Reset form
   const handleReset = () => {
     setIsSubmitted(false);
-    setSelectedDropdownService(defaultService);
-    setEditableService(defaultService);
+    setServiceInput(defaultService);
     setName('');
     setWorkEmail('');
     setContactNumber('');
-    setBudget('$1,500 – $3,500 (Production System)');
+    setSelectedBudget('₹20,000 – ₹45,000 (Full-Stack Web App)');
     setProjectDescription('');
     setErrorMessage('');
+    setIsComboboxOpen(false);
     onClose();
   };
 
@@ -464,39 +530,29 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/85 backdrop-blur-xl cursor-pointer"
+            className="fixed inset-0 bg-slate-900/60 dark:bg-black/85 backdrop-blur-xl cursor-pointer"
           />
 
-          {/* Futuristic Modal Container */}
+          {/* Modal Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="relative w-full max-w-4xl bg-[#0B0D14] border border-[#B600A8]/30 rounded-2xl sm:rounded-3xl shadow-[0_0_80px_rgba(182,0,168,0.25),0_25px_60px_rgba(0,0,0,0.95)] p-5 sm:p-7 md:p-8 text-[#D7E2EA] z-10 select-none max-h-[92vh] overflow-y-auto flex flex-col justify-between [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-[#B600A8]/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#07090F]"
+            className="relative w-full max-w-4xl bg-white dark:bg-[#0B0D14] border border-slate-200 dark:border-[#B600A8]/30 rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_0_80px_rgba(182,0,168,0.25),0_25px_60px_rgba(0,0,0,0.95)] p-5 sm:p-7 md:p-8 text-slate-800 dark:text-[#D7E2EA] z-10 select-none max-h-[92vh] overflow-y-auto flex flex-col justify-between transition-colors duration-200 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-[#B600A8]/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-100 dark:[&::-webkit-scrollbar-track]:bg-[#07090F]"
           >
             <div>
-              {/* Header with Live Sequential Receipt Badge */}
-              <div className="flex items-start justify-between gap-4 pb-4 border-b border-white/10">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
                   <span className="font-black text-2xl sm:text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-[#00D2FF] via-[#B600A8] to-[#FF007A] leading-none select-none tracking-tight shrink-0 drop-shadow-[0_0_15px_rgba(0,210,255,0.4)]">
                     // 01
                   </span>
 
                   <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-white font-black uppercase text-xl sm:text-2xl md:text-3xl tracking-tight leading-none truncate">
-                        PROJECT INQUIRY FORM
-                      </h2>
-                      {/* Sequential Receipt Chip */}
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#00D2FF]/15 border border-[#00D2FF]/40 text-[#00D2FF] font-mono text-[10px] sm:text-xs font-bold tracking-wider shadow-sm">
-                        <Hash className="w-3 h-3 text-[#00FF9D]" />
-                        <span>NEXT RECEIPT #{receiptNumber}</span>
-                      </span>
-                    </div>
-                    <span className="text-[#8E97A0] font-mono uppercase text-[10px] sm:text-xs tracking-[0.2em] mt-1 truncate">
-                      SELECT FROM 5 PORTFOLIO SERVICES • EDITABLE SPECIFICATION • PDF RECEIPT
-                    </span>
+                    <h2 className="text-slate-900 dark:text-white font-black uppercase text-xl sm:text-2xl md:text-3xl tracking-tight leading-none truncate">
+                      PROJECT INQUIRY FORM
+                    </h2>
                   </div>
                 </div>
 
@@ -505,7 +561,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                   type="button"
                   id="close-inquiry-modal-btn"
                   onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer shrink-0"
+                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white/60 hover:text-black dark:hover:text-white transition-all cursor-pointer shrink-0"
                   aria-label="Close modal"
                 >
                   <X className="w-4 h-4" />
@@ -513,53 +569,36 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
               </div>
 
               {/* Status Header Banner */}
-              <div className="mt-4 rounded-2xl border border-white/10 bg-[#120F24]/60 p-4 sm:p-5 relative overflow-hidden shadow-inner">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5 text-xs font-mono">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF9D] opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00FF9D]" />
-                    </span>
-                    <span className="text-white font-bold uppercase tracking-wider">
-                      SYSTEM READY // DIRECT INTAKE REGISTRY
-                    </span>
-                  </div>
-                  <div className="text-[#00D2FF]">
-                    SEQUENTIAL RECEIPT DISPATCH:{' '}
-                    <span className="text-[#00FF9D] font-bold">#REC-{receiptNumber}</span>
-                  </div>
-                </div>
-                <p className="text-[#D7E2EA] text-xs sm:text-sm font-light leading-relaxed">
-                  Choose from Priyanshu&apos;s 5 core portfolio services via dropdown or select cards below. The service name will automatically populate the editable specification field. An official PDF receipt with sequential tracking number <strong className="text-[#00D2FF]">#REC-{receiptNumber}</strong> will be generated upon dispatch.
-                </p>
+              <div className="mt-4 rounded-xl border border-purple-200 dark:border-white/10 bg-purple-50/70 dark:bg-[#120F24]/50 p-3.5 sm:p-4 text-slate-700 dark:text-[#D7E2EA] text-xs sm:text-sm font-light leading-relaxed">
+                Select from Priyanshu&apos;s core engineering &amp; architecture services or type your custom specification below. An official verified PDF receipt and architecture scope will be generated upon submission.
               </div>
 
               {/* Form Content */}
               {!isSubmitted ? (
                 <form id="project-inquiry-form" onSubmit={handleSubmit} className="flex flex-col gap-6 mt-6">
                   {/* ============================================================== */}
-                  {/* SECTION 1: THE 5 SERVICES FROM PORTFOLIO (Grid + Dropdown + Input) */}
+                  {/* SECTION 1: THE 6 SERVICES FROM PORTFOLIO + SEARCHABLE COMBOBOX */}
                   {/* ============================================================== */}
-                  <div className="rounded-2xl bg-[#0E121E] border border-white/10 p-4 sm:p-5 flex flex-col gap-4">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-[#0E121E] border border-slate-200 dark:border-white/10 p-4 sm:p-5 flex flex-col gap-4">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-[#B600A8] font-mono text-xs font-bold">// 01</span>
-                        <h3 className="text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
-                          PORTFOLIO SERVICES SELECTION &amp; EDITABLE SPECIFICATION
+                        <h3 className="text-slate-900 dark:text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
+                          PORTFOLIO SERVICES &amp; CUSTOM SPECIFICATION
                         </h3>
                       </div>
-                      <span className="text-[#8E97A0] font-mono text-[11px]">
-                        5 Core Services Listed
+                      <span className="text-slate-500 dark:text-[#8E97A0] font-mono text-[11px]">
+                        6 Core Services Listed
                       </span>
                     </div>
 
-                    {/* Interactive 5 Services Cards Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                    {/* Interactive 6 Services Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
                       {PORTFOLIO_SERVICES.map((srv) => {
                         const IconComp = srv.icon;
                         const isSelected =
-                          selectedDropdownService === srv.title ||
-                          editableService.toLowerCase().includes(srv.title.toLowerCase());
+                          serviceInput.trim().toLowerCase() === srv.title.toLowerCase() ||
+                          serviceInput.toLowerCase().includes(srv.title.toLowerCase());
                         return (
                           <button
                             key={srv.id}
@@ -568,18 +607,18 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                             className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[96px] group relative ${
                               isSelected
                                 ? 'border-[#00D2FF] bg-[#00D2FF]/15 shadow-[0_0_15px_rgba(0,210,255,0.25)] ring-1 ring-[#00D2FF]'
-                                : 'border-white/10 bg-[#131826] hover:border-white/20 hover:bg-[#181E30]'
+                                : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#131826] hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100 dark:hover:bg-[#181E30]'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-[10px] font-mono text-[#8E97A0] group-hover:text-cyan-300 transition-colors">
+                              <span className="text-[10px] font-mono text-slate-500 dark:text-[#8E97A0] group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
                                 {srv.number}
                               </span>
                               <div
                                 className={`w-6 h-6 rounded-lg flex items-center justify-center ${
                                   isSelected
                                     ? 'bg-[#00D2FF] text-black shadow-sm'
-                                    : 'bg-white/5 text-[#8E97A0] group-hover:text-white'
+                                    : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-[#8E97A0] group-hover:text-slate-900 dark:group-hover:text-white'
                                 }`}
                               >
                                 <IconComp className="w-3.5 h-3.5" />
@@ -589,12 +628,12 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                             <div>
                               <h4
                                 className={`text-[11px] sm:text-xs font-bold leading-tight ${
-                                  isSelected ? 'text-white' : 'text-[#D7E2EA] group-hover:text-white'
+                                  isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-[#D7E2EA] group-hover:text-slate-900 dark:group-hover:text-white'
                                 }`}
                               >
                                 {srv.title}
                               </h4>
-                              <p className="text-[9px] text-[#8E97A0] line-clamp-1 mt-0.5">
+                              <p className="text-[9px] text-slate-500 dark:text-[#8E97A0] line-clamp-1 mt-0.5">
                                 {srv.category}
                               </p>
                             </div>
@@ -607,62 +646,173 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                       })}
                     </div>
 
-                    {/* DUAL INTERACTION: Dropdown Selector + Editable Text Field */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
-                      {/* 1. Dropdown Selection populated with the 5 services */}
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="service-dropdown-select"
-                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#00D2FF] flex items-center gap-1.5"
-                        >
-                          <ChevronDown className="w-3.5 h-3.5 text-[#00D2FF]" />
-                          <span>CHOOSE SERVICE (DROPDOWN SELECTION):</span>
-                        </label>
-                        <div className="relative">
-                          <select
-                            id="service-dropdown-select"
-                            value={selectedDropdownService}
-                            onChange={(e) => handleDropdownChange(e.target.value)}
-                            className="w-full bg-[#141926] border border-cyan-400/40 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#00D2FF] focus:ring-1 focus:ring-[#00D2FF] transition-colors appearance-none cursor-pointer pr-10"
+                    {/* UNIFIED SEARCHABLE COMBOBOX */}
+                    <div ref={comboboxRef} className="relative flex flex-col gap-1.5 pt-1">
+                      <label
+                        htmlFor="combobox-service-input"
+                        className="text-[11px] font-mono font-bold uppercase tracking-wider text-cyan-700 dark:text-[#00D2FF] flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-[#00D2FF]" />
+                          <span>SERVICE SPECIFICATION (SEARCH OR CUSTOM) *</span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 dark:text-[#8E97A0] font-normal normal-case hidden sm:inline">
+                          Type to search, select below, or type custom scope
+                        </span>
+                      </label>
+
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 pointer-events-none">
+                          <Search className="w-4 h-4" />
+                        </div>
+
+                        <input
+                          id="combobox-service-input"
+                          type="text"
+                          value={serviceInput}
+                          onChange={(e) => {
+                            setServiceInput(e.target.value);
+                            setIsComboboxOpen(true);
+                          }}
+                          onFocus={() => setIsComboboxOpen(true)}
+                          placeholder="Search portfolio service or type custom scope..."
+                          autoComplete="off"
+                          className="w-full bg-white dark:bg-[#141926] border border-cyan-500/40 hover:border-cyan-500/70 focus:border-[#00D2FF] focus:ring-1 focus:ring-[#00D2FF] rounded-xl pl-10 pr-16 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 transition-all outline-none shadow-sm"
+                        />
+
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                          {serviceInput && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setServiceInput('');
+                                setIsComboboxOpen(true);
+                              }}
+                              className="p-1 rounded-md text-slate-400 dark:text-white/40 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                              aria-label="Clear service input"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setIsComboboxOpen((prev) => !prev)}
+                            className="p-1.5 rounded-md text-slate-500 dark:text-white/50 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                            aria-label="Toggle service options dropdown"
                           >
-                            {PORTFOLIO_SERVICES.map((s) => (
-                              <option key={s.id} value={s.title} className="bg-[#0B0D14] text-white">
-                                {s.number}. {s.title}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="w-4 h-4 text-white/50 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                isComboboxOpen ? 'rotate-180 text-cyan-600 dark:text-[#00D2FF]' : ''
+                              }`}
+                            />
+                          </button>
                         </div>
                       </div>
 
-                      {/* 2. Editable Text Field Populated With These Options */}
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="editable-service-input"
-                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#B600A8] flex items-center gap-1.5"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-[#B600A8]" />
-                          <span>EDITABLE SERVICE SPECIFICATION:</span>
-                        </label>
-                        <input
-                          id="editable-service-input"
-                          type="text"
-                          value={editableService}
-                          onChange={(e) => setEditableService(e.target.value)}
-                          placeholder="Select from dropdown or customize service..."
-                          className="w-full bg-[#141926] border border-purple-500/40 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#00FF9D] focus:ring-1 focus:ring-[#00FF9D] transition-colors"
-                        />
-                      </div>
+                      {/* Dropdown Menu */}
+                      <AnimatePresence>
+                        {isComboboxOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-[#0D111D] border border-cyan-500/30 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.85)] z-30 max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 backdrop-blur-md [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-cyan-500/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-100 dark:[&::-webkit-scrollbar-track]:bg-[#07090F]"
+                          >
+                            {filteredServices.length > 0 ? (
+                              filteredServices.map((srv) => {
+                                const SrvIcon = srv.icon;
+                                const isItemMatch =
+                                  serviceInput.trim().toLowerCase() === srv.title.toLowerCase();
+                                return (
+                                  <button
+                                    key={srv.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setServiceInput(srv.title);
+                                      setIsComboboxOpen(false);
+                                    }}
+                                    className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-3 transition-colors cursor-pointer group ${
+                                      isItemMatch
+                                        ? 'bg-[#00D2FF]/15 text-slate-900 dark:text-white font-bold'
+                                        : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-[#D7E2EA]'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      <div
+                                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                          isItemMatch
+                                            ? 'bg-[#00D2FF] text-black'
+                                            : 'bg-slate-100 dark:bg-white/5 text-cyan-600 dark:text-cyan-400 group-hover:bg-cyan-100 dark:group-hover:bg-cyan-400/20'
+                                        }`}
+                                      >
+                                        <SrvIcon className="w-3.5 h-3.5" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80">
+                                            {srv.number}
+                                          </span>
+                                          <p className="text-xs font-bold truncate group-hover:text-black dark:group-hover:text-white">
+                                            {srv.title}
+                                          </p>
+                                        </div>
+                                        <p className="text-[10px] font-mono text-slate-500 dark:text-[#8E97A0] truncate">
+                                          {srv.category}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <div className="shrink-0 flex items-center gap-1.5">
+                                      {isItemMatch && (
+                                        <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-[#00FF9D] bg-emerald-100 dark:bg-[#00FF9D]/10 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-[#00FF9D]/30">
+                                          Selected
+                                        </span>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="p-3 text-center text-xs text-slate-500 dark:text-[#8E97A0] font-mono">
+                                No exact portfolio service match found.
+                              </div>
+                            )}
+
+                            {/* Custom typed option if input doesn't match an exact service title */}
+                            {serviceInput.trim() &&
+                              !PORTFOLIO_SERVICES.some(
+                                (s) => s.title.toLowerCase() === serviceInput.trim().toLowerCase()
+                              ) && (
+                                <button
+                                  type="button"
+                                  onClick={() => setIsComboboxOpen(false)}
+                                  className="w-full text-left px-3.5 py-2.5 bg-purple-50 dark:bg-[#B600A8]/10 hover:bg-purple-100 dark:hover:bg-[#B600A8]/20 text-purple-900 dark:text-white flex items-center justify-between gap-2 border-t border-purple-200 dark:border-[#B600A8]/20 transition-colors cursor-pointer font-mono"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-[#FF007A] shrink-0" />
+                                    <span className="text-xs truncate">
+                                      Use custom specification: <span className="text-emerald-700 dark:text-[#00FF9D] font-bold">&quot;{serviceInput.trim()}&quot;</span>
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] uppercase font-bold text-purple-700 dark:text-[#FF007A] bg-purple-100 dark:bg-[#FF007A]/10 px-2 py-0.5 rounded border border-purple-300 dark:border-[#FF007A]/30 shrink-0">
+                                    Custom
+                                  </span>
+                                </button>
+                              )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 
                   {/* ============================================================== */}
                   {/* SECTION 2: CLIENT INPUT FIELDS (Name, Work Email, Contact No.) */}
                   {/* ============================================================== */}
-                  <div className="rounded-2xl bg-[#0E121E] border border-white/10 p-4 sm:p-5 flex flex-col gap-4">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-[#0E121E] border border-slate-200 dark:border-white/10 p-4 sm:p-5 flex flex-col gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#00D2FF] font-mono text-xs font-bold">// 02</span>
-                      <h3 className="text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
+                      <span className="text-cyan-700 dark:text-[#00D2FF] font-mono text-xs font-bold">// 02</span>
+                      <h3 className="text-slate-900 dark:text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
                         CLIENT CONTACT INFORMATION
                       </h3>
                     </div>
@@ -672,9 +822,9 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                       <div className="flex flex-col gap-1.5">
                         <label
                           htmlFor="inquiry-name"
-                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-white flex items-center gap-1.5"
+                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5"
                         >
-                          <User className="w-3 h-3 text-[#00D2FF]" />
+                          <User className="w-3 h-3 text-cyan-600 dark:text-[#00D2FF]" />
                           <span>FULL NAME / ORG *</span>
                         </label>
                         <input
@@ -682,9 +832,9 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="Priyanshu Pundir"
+                          placeholder="e.g. John Doe / Acme Corp"
                           required
-                          className="w-full bg-[#141926] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00D2FF] focus:ring-1 focus:ring-[#00D2FF] transition-colors"
+                          className="w-full bg-white dark:bg-[#141926] border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-[#00D2FF] focus:ring-1 focus:ring-[#00D2FF] transition-colors shadow-sm"
                         />
                       </div>
 
@@ -692,7 +842,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                       <div className="flex flex-col gap-1.5">
                         <label
                           htmlFor="inquiry-email"
-                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-white flex items-center gap-1.5"
+                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5"
                         >
                           <Mail className="w-3 h-3 text-[#B600A8]" />
                           <span>WORK EMAIL *</span>
@@ -702,9 +852,9 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                           type="email"
                           value={workEmail}
                           onChange={(e) => setWorkEmail(e.target.value)}
-                          placeholder="client@organization.com"
+                          placeholder="e.g. name@company.com"
                           required
-                          className="w-full bg-[#141926] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#B600A8] focus:ring-1 focus:ring-[#B600A8] transition-colors"
+                          className="w-full bg-white dark:bg-[#141926] border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-[#B600A8] focus:ring-1 focus:ring-[#B600A8] transition-colors shadow-sm"
                         />
                       </div>
 
@@ -712,9 +862,9 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                       <div className="flex flex-col gap-1.5">
                         <label
                           htmlFor="inquiry-phone"
-                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-white flex items-center gap-1.5"
+                          className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5"
                         >
-                          <Phone className="w-3 h-3 text-[#00FF9D]" />
+                          <Phone className="w-3 h-3 text-emerald-600 dark:text-[#00FF9D]" />
                           <span>CONTACT NUMBER *</span>
                         </label>
                         <input
@@ -722,61 +872,95 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                           type="tel"
                           value={contactNumber}
                           onChange={(e) => setContactNumber(e.target.value)}
-                          placeholder="+91 9548014400"
+                          placeholder="e.g. +1 (555) 000-0000 / +91 98765 43210"
                           required
-                          className="w-full bg-[#141926] border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00FF9D] focus:ring-1 focus:ring-[#00FF9D] transition-colors"
+                          className="w-full bg-white dark:bg-[#141926] border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-[#00FF9D] focus:ring-1 focus:ring-[#00FF9D] transition-colors shadow-sm"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* ============================================================== */}
-                  {/* SECTION 3: BUDGET INPUT FIELD & PRESETS                        */}
+                  {/* SECTION 3: BUDGET INPUT FIELD & PRESETS (INR ₹ FREELANCER TIERS) */}
                   {/* ============================================================== */}
-                  <div className="rounded-2xl bg-[#0E121E] border border-white/10 p-4 sm:p-5 flex flex-col gap-3">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-[#0E121E] border border-slate-200 dark:border-white/10 p-4 sm:p-5 flex flex-col gap-3.5">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#00FF9D] font-mono text-xs font-bold">// 03</span>
-                        <h3 className="text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
-                          BUDGET ALLOCATION *
+                        <span className="text-emerald-700 dark:text-[#00FF9D] font-mono text-xs font-bold">// 03</span>
+                        <h3 className="text-slate-900 dark:text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
+                          BUDGET ALLOCATION (INR ₹) *
                         </h3>
                       </div>
-                      <span className="text-[#8E97A0] font-mono text-[10px]">
+                      <span className="text-slate-500 dark:text-[#8E97A0] font-mono text-[10px]">
                         Select preset tier or enter custom budget
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-2.5">
-                      {/* Presets */}
-                      <div className="flex flex-wrap gap-2">
-                        {SUGGESTED_BUDGETS.map((tier) => (
-                          <button
-                            key={tier}
-                            type="button"
-                            onClick={() => setBudget(tier)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
-                              budget === tier
-                                ? 'bg-gradient-to-r from-[#00D2FF] to-[#0284C7] text-black font-bold shadow-[0_0_12px_rgba(0,210,255,0.4)]'
-                                : 'bg-[#141926] border border-white/10 text-[#D7E2EA] hover:border-white/20'
-                            }`}
-                          >
-                            {tier}
-                          </button>
-                        ))}
+                    <div className="flex flex-col gap-3">
+                      {/* 4 Freelancer INR (₹) Preset Tiers */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        {BUDGET_TIERS.map((tier) => {
+                          const isSelected =
+                            selectedBudget === tier.range ||
+                            selectedBudget === tier.value ||
+                            selectedBudget.startsWith(tier.range);
+
+                          return (
+                            <button
+                              key={tier.id}
+                              type="button"
+                              onClick={() => setSelectedBudget(tier.value)}
+                              className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[74px] group relative ${
+                                isSelected
+                                  ? 'border-[#00D2FF] bg-[#00D2FF]/15 shadow-[0_0_15px_rgba(0,210,255,0.25)] ring-1 ring-[#00D2FF]'
+                                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#131826] hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100 dark:hover:bg-[#181E30]'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-1 mb-1">
+                                <span
+                                  className={`text-xs sm:text-sm font-mono font-bold tracking-tight ${
+                                    isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-[#D7E2EA] group-hover:text-slate-900 dark:group-hover:text-white'
+                                  }`}
+                                >
+                                  {tier.range}
+                                </span>
+                                {isSelected && (
+                                  <div className="w-2 h-2 rounded-full bg-[#00FF9D] shadow-[0_0_6px_#00FF9D] shrink-0" />
+                                )}
+                              </div>
+                              <div
+                                className={`text-[10px] font-mono transition-colors line-clamp-1 ${
+                                  isSelected ? 'text-cyan-700 dark:text-cyan-300 font-semibold' : 'text-slate-500 dark:text-[#8E97A0] group-hover:text-slate-800 dark:group-hover:text-white/80'
+                                }`}
+                              >
+                                {tier.tag}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
 
-                      {/* Direct Budget Input */}
-                      <div className="relative mt-1">
-                        <DollarSign className="w-4 h-4 text-[#00FF9D] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      {/* Direct Custom Budget Input */}
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-emerald-600 dark:text-[#00FF9D]">
+                          <IndianRupee className="w-4 h-4" />
+                        </div>
                         <input
                           id="inquiry-budget"
                           type="text"
-                          value={budget}
-                          onChange={(e) => setBudget(e.target.value)}
-                          placeholder="e.g. $2,500, €3,000, ₹1,50,000, or Ongoing Retainer"
+                          value={selectedBudget}
+                          onChange={(e) => setSelectedBudget(e.target.value)}
+                          placeholder="e.g. ₹35,000 (or custom budget)"
                           required
-                          className="w-full bg-[#141926] border border-white/15 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00FF9D] focus:ring-1 focus:ring-[#00FF9D] transition-colors"
+                          className="w-full bg-white dark:bg-[#141926] border border-slate-300 dark:border-white/15 rounded-xl pl-10 pr-20 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/25 focus:outline-none focus:border-[#00FF9D] focus:ring-1 focus:ring-[#00FF9D] transition-colors shadow-sm"
                         />
+                        {isCustomBudget && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-100 dark:bg-[#00FF9D]/15 border border-emerald-300 dark:border-[#00FF9D]/30 text-emerald-800 dark:text-[#00FF9D]">
+                              Custom
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -784,15 +968,15 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                   {/* ============================================================== */}
                   {/* SECTION 4: PROJECT DESCRIPTION TEXT AREA                       */}
                   {/* ============================================================== */}
-                  <div className="rounded-2xl bg-[#0E121E] border border-white/10 p-4 sm:p-5 flex flex-col gap-3">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-[#0E121E] border border-slate-200 dark:border-white/10 p-4 sm:p-5 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-[#B600A8] font-mono text-xs font-bold">// 04</span>
-                        <h3 className="text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
+                        <h3 className="text-slate-900 dark:text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-wider">
                           PROJECT DESCRIPTION *
                         </h3>
                       </div>
-                      <span className="text-[#8E97A0] font-mono text-[10px]">
+                      <span className="text-slate-500 dark:text-[#8E97A0] font-mono text-[10px]">
                         Detailed requirements, timeline, or architecture goals
                       </span>
                     </div>
@@ -804,59 +988,31 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                       onChange={(e) => setProjectDescription(e.target.value)}
                       placeholder="Describe your project, goals, key deliverables, target milestones, tech preferences, or database requirements..."
                       required
-                      className="w-full bg-[#141926] border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00D2FF] focus:ring-1 focus:ring-[#00D2FF] transition-colors resize-none"
+                      className="w-full bg-white dark:bg-[#141926] border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-[#00D2FF] focus:ring-1 focus:ring-[#00D2FF] transition-colors resize-none shadow-sm"
                     />
                   </div>
 
                   {/* Error Notification */}
                   {errorMessage && (
-                    <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-mono">
+                    <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-700 dark:text-rose-300 text-xs font-mono">
                       ⚠ {errorMessage}
                     </div>
                   )}
 
                   {/* ============================================================== */}
-                  {/* SECTION 5: ACTIONS & DOWNLOAD OPTION                           */}
+                  {/* SECTION 5: ACTIONS & PDF DISPATCH                              */}
                   {/* ============================================================== */}
-                  <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    {/* Developer Direct Contacts */}
-                    <div className="flex items-center gap-3 text-xs font-mono text-[#8E97A0]">
-                      <div className="flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-[#00D2FF]" />
-                        <span>priyanshupundir36@gmail.com</span>
-                      </div>
-                      <span>•</span>
-                      <div className="flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-[#00FF9D]" />
-                        <span>+91 9548014400</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons: Preview PDF + Submit & Generate Receipt */}
-                    <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
-                      {/* Direct PDF Draft Download Button */}
-                      <button
-                        type="button"
-                        id="download-preview-btn"
-                        onClick={handleManualDownloadPreview}
-                        className="rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white font-mono text-xs uppercase tracking-wider px-4 py-3 transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                        title="Download sample PDF receipt based on current inputs"
-                      >
-                        <Download className="w-3.5 h-3.5 text-[#00D2FF]" />
-                        <span>Download PDF Preview</span>
-                      </button>
-
-                      {/* Main Submit & Download Receipt Button */}
-                      <button
-                        type="submit"
-                        id="submit-inquiry-btn"
-                        className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-[#00D2FF] via-[#B600A8] to-[#9333EA] hover:opacity-95 text-white font-mono font-bold text-xs uppercase tracking-wider px-6 py-3 shadow-[0_0_25px_rgba(0,210,255,0.35)] inline-flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <Download className="w-4 h-4 text-[#00FF9D]" />
-                        <Send className="w-3.5 h-3.5 text-white" />
-                        <span>SUBMIT &amp; DOWNLOAD RECEIPT #{receiptNumber}</span>
-                      </button>
-                    </div>
+                  <div className="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-end">
+                    {/* Main Submit & Download Receipt Button */}
+                    <button
+                      type="submit"
+                      id="submit-inquiry-btn"
+                      className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-[#00D2FF] via-[#B600A8] to-[#9333EA] hover:opacity-95 text-white font-mono font-bold text-xs uppercase tracking-wider px-6 py-3 shadow-[0_0_25px_rgba(0,210,255,0.35)] inline-flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <Download className="w-4 h-4 text-[#00FF9D]" />
+                      <Send className="w-3.5 h-3.5 text-white" />
+                      <span>SUBMIT &amp; DOWNLOAD PDF RECEIPT</span>
+                    </button>
                   </div>
                 </form>
               ) : (
@@ -868,45 +1024,41 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center text-center py-6 sm:py-8"
                 >
-                  <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center text-[#00FF9D] mb-4 shadow-[0_0_25px_rgba(0,255,157,0.4)]">
+                  <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center text-emerald-600 dark:text-[#00FF9D] mb-4 shadow-[0_0_25px_rgba(0,255,157,0.4)]">
                     <CheckCircle2 className="w-9 h-9" />
                   </div>
 
-                  <h3 className="text-white text-xl sm:text-2xl font-black uppercase tracking-tight">
+                  <h3 className="text-slate-900 dark:text-white text-xl sm:text-2xl font-black uppercase tracking-tight">
                     Inquiry Verified &amp; Receipt Generated!
                   </h3>
-                  <p className="text-[#8E97A0] text-xs sm:text-sm max-w-lg mt-1.5 leading-relaxed font-mono">
-                    Official PDF receipt <span className="text-[#00FF9D] font-bold">#{issuedReceiptId}</span> has been compiled and downloaded to your device.
+                  <p className="text-slate-600 dark:text-[#8E97A0] text-xs sm:text-sm max-w-lg mt-1.5 leading-relaxed font-mono">
+                    Official PDF receipt <span className="text-emerald-600 dark:text-[#00FF9D] font-bold">#{issuedReceiptId}</span> has been compiled and downloaded to your device.
                   </p>
 
                   {/* Summary manifest */}
-                  <div className="w-full max-w-lg bg-[#0E121E] border border-white/10 rounded-2xl p-5 my-5 text-left flex flex-col gap-2.5 text-xs font-mono">
-                    <div className="flex justify-between items-center pb-2.5 border-b border-white/10">
-                      <span className="text-[#8E97A0]">RECEIPT REFERENCE ID</span>
-                      <span className="text-[#00FF9D] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="w-full max-w-lg bg-slate-50 dark:bg-[#0E121E] border border-slate-200 dark:border-white/10 rounded-2xl p-5 my-5 text-left flex flex-col gap-2.5 text-xs font-mono shadow-sm">
+                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-200 dark:border-white/10">
+                      <span className="text-slate-500 dark:text-[#8E97A0]">RECEIPT REFERENCE ID</span>
+                      <span className="text-emerald-700 dark:text-[#00FF9D] font-bold uppercase tracking-wider flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-[#00FF9D] animate-ping" />
                         #{issuedReceiptId}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#8E97A0]">NEXT QUEUE ID</span>
-                      <span className="text-[#00D2FF] font-bold">#REC-{receiptNumber}</span>
+                      <span className="text-slate-500 dark:text-[#8E97A0]">SERVICE SPEC</span>
+                      <span className="text-slate-900 dark:text-white font-bold">{serviceInput}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#8E97A0]">SERVICE SPEC</span>
-                      <span className="text-white font-bold">{editableService}</span>
+                      <span className="text-slate-500 dark:text-[#8E97A0]">CLIENT IDENTITY</span>
+                      <span className="text-slate-900 dark:text-white font-medium">{name} ({workEmail})</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#8E97A0]">CLIENT IDENTITY</span>
-                      <span className="text-white font-medium">{name} ({workEmail})</span>
+                      <span className="text-slate-500 dark:text-[#8E97A0]">CONTACT NUMBER</span>
+                      <span className="text-slate-900 dark:text-white font-medium">{contactNumber}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#8E97A0]">CONTACT NUMBER</span>
-                      <span className="text-white font-medium">{contactNumber}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[#8E97A0]">ALLOCATED BUDGET</span>
-                      <span className="text-[#00FF9D] font-medium">{budget}</span>
+                      <span className="text-slate-500 dark:text-[#8E97A0]">ALLOCATED BUDGET</span>
+                      <span className="text-emerald-700 dark:text-[#00FF9D] font-medium">{selectedBudget}</span>
                     </div>
                   </div>
 
@@ -917,23 +1069,23 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                       id="download-again-btn"
                       onClick={() => {
                         const parsedNum = parseInt(issuedReceiptId.replace('REC-', ''), 10) || 1001;
-                        generateReceiptPDF(parsedNum, editableService, false);
+                        generateReceiptPDF(parsedNum, serviceInput);
                       }}
-                      className="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all inline-flex items-center gap-2 cursor-pointer shadow-md"
+                      className="rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 border border-slate-300 dark:border-white/20 text-slate-800 dark:text-white font-mono font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm"
                     >
-                      <Download className="w-3.5 h-3.5 text-[#00FF9D]" />
+                      <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-[#00FF9D]" />
                       <span>Download Receipt #{issuedReceiptId} Again</span>
                     </button>
 
                     <a
                       href={`https://mail.google.com/mail/?view=cm&fs=1&to=priyanshupundir36@gmail.com&su=${encodeURIComponent(
-                        `[Project Inquiry #${issuedReceiptId}] ${editableService} - ${name}`
+                        `[Project Inquiry #${issuedReceiptId}] ${serviceInput} - ${name}`
                       )}&body=${encodeURIComponent(
-                        `Receipt Reference: #${issuedReceiptId}\nClient: ${name}\nEmail: ${workEmail}\nContact No: ${contactNumber}\nService: ${editableService}\nBudget: ${budget}\n\nProject Description:\n${projectDescription}`
+                        `Receipt Reference: #${issuedReceiptId}\nClient: ${name}\nEmail: ${workEmail}\nContact No: ${contactNumber}\nService: ${serviceInput}\nBudget: ${selectedBudget}\n\nProject Description:\n${projectDescription}`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-xl bg-[#00D2FF]/20 hover:bg-[#00D2FF]/30 border border-[#00D2FF]/40 text-[#00D2FF] font-mono font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                      className="rounded-xl bg-[#00D2FF]/15 hover:bg-[#00D2FF]/25 border border-[#00D2FF]/40 text-cyan-800 dark:text-[#00D2FF] font-mono font-semibold text-xs uppercase tracking-wider px-5 py-2.5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                     >
                       <span>Send Direct via Gmail</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -942,7 +1094,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
                     <button
                       type="button"
                       onClick={handleReset}
-                      className="rounded-xl bg-white text-black font-mono font-bold text-xs uppercase tracking-wider px-6 py-2.5 hover:bg-gray-200 transition-all cursor-pointer shadow-md"
+                      className="rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-mono font-bold text-xs uppercase tracking-wider px-6 py-2.5 transition-all cursor-pointer shadow-md"
                     >
                       Done / Close
                     </button>
@@ -957,4 +1109,5 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
   );
 };
 
+export const ProjectInquiryForm = ProjectInquiryModal;
 export default ProjectInquiryModal;

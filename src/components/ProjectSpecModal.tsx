@@ -103,7 +103,7 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
       setCommandInput('');
       return;
     } else {
-      newLogs.push(`Command not recognized: "${cmd}". Type "help" for commands.`);
+      newLogs.push(`Command not recognized: '${commandInput}'. Type 'help' for options.`);
     }
 
     setTerminalLogs(newLogs);
@@ -112,14 +112,17 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+      <div
+        id="project-spec-modal-overlay"
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+      >
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/85 backdrop-blur-xl cursor-pointer"
+          className="fixed inset-0 bg-slate-900/60 dark:bg-black/85 backdrop-blur-xl cursor-pointer"
         />
 
         {/* Modal Window */}
@@ -128,58 +131,58 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="relative w-full max-w-4xl bg-[#0B0D14] border border-white/10 rounded-2xl sm:rounded-3xl shadow-[0_0_60px_rgba(168,85,247,0.15),0_25px_60px_rgba(0,0,0,0.9)] p-5 sm:p-7 md:p-8 text-[#D7E2EA] z-10 select-none max-h-[92vh] overflow-y-auto flex flex-col justify-between [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-purple-500/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
+          className="relative w-full max-w-4xl bg-white dark:bg-[#0B0D14] border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_0_60px_rgba(168,85,247,0.15),0_25px_60px_rgba(0,0,0,0.9)] p-5 sm:p-7 md:p-8 text-slate-800 dark:text-[#D7E2EA] z-10 select-none max-h-[92vh] overflow-y-auto flex flex-col justify-between transition-colors duration-200 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-purple-500/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
         >
           <div>
-            {/* 1. Modal Header matching Image 1 */}
-            <div className="flex items-start justify-between gap-4 pb-4 border-b border-white/10">
+            {/* 1. Modal Header */}
+            <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-200 dark:border-white/10">
               <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
                 {/* Glowing Purple Number */}
-                <span className="font-black text-2xl sm:text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-[#C084FC] via-[#A855F7] to-[#B600A8] leading-none select-none tracking-tight shrink-0 drop-shadow-[0_0_15px_rgba(192,132,252,0.4)]">
+                <span className="font-black text-2xl sm:text-3xl md:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-[#9333EA] via-[#A855F7] to-[#C084FC] leading-none select-none tracking-tight shrink-0 drop-shadow-[0_0_15px_rgba(192,132,252,0.4)]">
                   {project.number}
                 </span>
 
                 <div className="flex flex-col min-w-0">
-                  <h2 className="text-white font-black uppercase text-xl sm:text-2xl md:text-3xl tracking-tight leading-none truncate">
+                  <h2 className="text-slate-900 dark:text-white font-black uppercase text-xl sm:text-2xl md:text-3xl tracking-tight leading-none truncate">
                     {project.name}
                   </h2>
-                  <span className="text-[#8E97A0] font-mono uppercase text-[10px] sm:text-xs tracking-[0.2em] mt-1 truncate">
+                  <span className="text-slate-500 dark:text-[#8E97A0] font-mono uppercase text-[10px] sm:text-xs tracking-[0.2em] mt-1 truncate">
                     {project.subtitle}
                   </span>
                 </div>
               </div>
 
-              {/* Close Button matching Image 1 */}
+              {/* Close Button */}
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white/60 hover:text-black dark:hover:text-white transition-all cursor-pointer shrink-0"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* 2. Architectural Metric & Impact Box matching Image 1 */}
-            <div className="mt-5 rounded-2xl border border-purple-500/30 bg-[#160E27]/50 p-4 sm:p-5 relative overflow-hidden shadow-inner">
-              <div className="flex items-center gap-2 text-purple-400 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2">
-                <Activity className="w-4 h-4 text-[#C084FC] animate-pulse" />
+            {/* 2. Architectural Metric & Impact Box */}
+            <div className="mt-5 rounded-2xl border border-purple-200 dark:border-purple-500/30 bg-purple-50/70 dark:bg-[#160E27]/50 p-4 sm:p-5 relative overflow-hidden shadow-inner">
+              <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2">
+                <Activity className="w-4 h-4 text-[#9333EA] dark:text-[#C084FC] animate-pulse" />
                 <span>ARCHITECTURAL METRIC &amp; IMPACT</span>
               </div>
-              <p className="text-white text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
+              <p className="text-slate-800 dark:text-white text-xs sm:text-sm md:text-[15px] font-normal leading-relaxed">
                 &ldquo;{project.impactQuote}&rdquo;
               </p>
             </div>
 
-            {/* 3. Navigation Tabs with Underline matching Image 1 */}
-            <div className="flex items-center gap-6 sm:gap-8 border-b border-white/10 mt-6 overflow-x-auto whitespace-nowrap">
+            {/* 3. Navigation Tabs with Underline */}
+            <div className="flex items-center gap-6 sm:gap-8 border-b border-slate-200 dark:border-white/10 mt-6 overflow-x-auto whitespace-nowrap">
               <button
                 type="button"
                 onClick={() => setActiveTab('architecture')}
                 className={`pb-3 text-xs sm:text-sm font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer border-b-2 ${
                   activeTab === 'architecture'
-                    ? 'border-[#C084FC] text-white font-bold drop-shadow-[0_0_10px_rgba(192,132,252,0.4)]'
-                    : 'border-transparent text-[#8E97A0] hover:text-white font-medium'
+                    ? 'border-[#9333EA] dark:border-[#C084FC] text-purple-700 dark:text-white font-bold drop-shadow-[0_0_10px_rgba(192,132,252,0.4)]'
+                    : 'border-transparent text-slate-500 dark:text-[#8E97A0] hover:text-slate-900 dark:hover:text-white font-medium'
                 }`}
               >
                 ARCHITECTURE SPEC
@@ -190,8 +193,8 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
                 onClick={() => setActiveTab('telemetry')}
                 className={`pb-3 text-xs sm:text-sm font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer border-b-2 ${
                   activeTab === 'telemetry'
-                    ? 'border-[#C084FC] text-white font-bold drop-shadow-[0_0_10px_rgba(192,132,252,0.4)]'
-                    : 'border-transparent text-[#8E97A0] hover:text-white font-medium'
+                    ? 'border-[#9333EA] dark:border-[#C084FC] text-purple-700 dark:text-white font-bold drop-shadow-[0_0_10px_rgba(192,132,252,0.4)]'
+                    : 'border-transparent text-slate-500 dark:text-[#8E97A0] hover:text-slate-900 dark:hover:text-white font-medium'
                 }`}
               >
                 &gt;_ LIVE TELEMETRY / DEMO
@@ -202,8 +205,8 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
                 onClick={() => setActiveTab('techStack')}
                 className={`pb-3 text-xs sm:text-sm font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer border-b-2 ${
                   activeTab === 'techStack'
-                    ? 'border-[#C084FC] text-white font-bold drop-shadow-[0_0_10px_rgba(192,132,252,0.4)]'
-                    : 'border-transparent text-[#8E97A0] hover:text-white font-medium'
+                    ? 'border-[#9333EA] dark:border-[#C084FC] text-purple-700 dark:text-white font-bold drop-shadow-[0_0_10px_rgba(192,132,252,0.4)]'
+                    : 'border-transparent text-slate-500 dark:text-[#8E97A0] hover:text-slate-900 dark:hover:text-white font-medium'
                 }`}
               >
                 TECH STACK &amp; SPECS
@@ -212,18 +215,18 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
 
             {/* 4. Tab Content */}
             <div className="py-6 min-h-[260px]">
-              {/* TAB 3: TECH STACK & SPECS (Exact match to Image 1) */}
+              {/* TAB 3: TECH STACK & SPECS */}
               {activeTab === 'techStack' && (
                 <div className="flex flex-col gap-5 animate-fadeIn">
                   <div>
-                    <h4 className="text-[#C084FC] font-mono text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                    <h4 className="text-purple-700 dark:text-[#C084FC] font-mono text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-3">
                       CORE TECHNOLOGIES EMPLOYED
                     </h4>
                     <div className="flex flex-wrap gap-2 sm:gap-2.5">
                       {project.techStack.map((tech) => (
                         <span
                           key={tech}
-                          className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-[#141824] border border-white/10 text-white font-medium text-xs sm:text-sm shadow-sm"
+                          className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-100 dark:bg-[#141824] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-medium text-xs sm:text-sm shadow-sm"
                         >
                           {tech}
                         </span>
@@ -234,21 +237,21 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
                   {/* Two Cards: Category & Demo Mode */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     {/* Card 1: CATEGORY */}
-                    <div className="bg-[#101420] border border-white/10 rounded-2xl p-4 sm:p-5">
-                      <span className="text-[#8E97A0] font-mono text-[10px] sm:text-[11px] uppercase tracking-wider block mb-1">
+                    <div className="bg-slate-50 dark:bg-[#101420] border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-5">
+                      <span className="text-slate-500 dark:text-[#8E97A0] font-mono text-[10px] sm:text-[11px] uppercase tracking-wider block mb-1">
                         CATEGORY
                       </span>
-                      <h5 className="text-white font-bold text-sm sm:text-base md:text-lg">
+                      <h5 className="text-slate-900 dark:text-white font-bold text-sm sm:text-base md:text-lg">
                         {project.category}
                       </h5>
                     </div>
 
                     {/* Card 2: DEMO MODE */}
-                    <div className="bg-[#101420] border border-white/10 rounded-2xl p-4 sm:p-5">
-                      <span className="text-[#8E97A0] font-mono text-[10px] sm:text-[11px] uppercase tracking-wider block mb-1">
+                    <div className="bg-slate-50 dark:bg-[#101420] border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-5">
+                      <span className="text-slate-500 dark:text-[#8E97A0] font-mono text-[10px] sm:text-[11px] uppercase tracking-wider block mb-1">
                         DEMO MODE
                       </span>
-                      <h5 className="text-[#00FF9D] font-mono font-bold text-xs sm:text-sm md:text-base">
+                      <h5 className="text-emerald-600 dark:text-[#00FF9D] font-mono font-bold text-xs sm:text-sm md:text-base">
                         {project.demoMode}
                       </h5>
                     </div>
@@ -263,19 +266,19 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
                     {project.architectureStages.map((stage, idx) => (
                       <div
                         key={stage.stage}
-                        className="bg-[#101420] border border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-[#C084FC]/40 transition-colors"
+                        className="bg-slate-50 dark:bg-[#101420] border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex flex-col justify-between hover:border-purple-400 dark:hover:border-[#C084FC]/40 transition-colors"
                       >
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20">
                               {stage.stage}
                             </span>
-                            <span className="text-[#8E97A0] text-xs font-mono">0{idx + 1}/03</span>
+                            <span className="text-slate-400 dark:text-[#8E97A0] text-xs font-mono">0{idx + 1}/03</span>
                           </div>
-                          <h5 className="text-white font-bold text-sm uppercase tracking-tight mb-2">
+                          <h5 className="text-slate-900 dark:text-white font-bold text-sm uppercase tracking-tight mb-2">
                             {stage.title}
                           </h5>
-                          <p className="text-[#8E97A0] text-xs leading-relaxed font-light">
+                          <p className="text-slate-600 dark:text-[#8E97A0] text-xs leading-relaxed font-light">
                             {stage.detail}
                           </p>
                         </div>
@@ -283,9 +286,9 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
                     ))}
                   </div>
 
-                  <div className="mt-2 p-4 rounded-xl bg-purple-950/20 border border-purple-500/20 flex items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2 text-purple-300 font-mono">
-                      <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
+                  <div className="mt-2 p-4 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-500/20 flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 text-purple-800 dark:text-purple-300 font-mono">
+                      <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
                       <span>Production-Grade Architecture: Verified across real user scenarios and performance profiling.</span>
                     </div>
                   </div>
@@ -296,7 +299,7 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
               {activeTab === 'telemetry' && (
                 <div className="flex flex-col gap-3 animate-fadeIn">
                   {/* Terminal Header */}
-                  <div className="rounded-2xl border border-white/15 bg-[#07090F] overflow-hidden shadow-2xl flex flex-col">
+                  <div className="rounded-2xl border border-slate-300 dark:border-white/15 bg-[#07090F] overflow-hidden shadow-2xl flex flex-col">
                     <div className="bg-[#111624] px-4 py-2 border-b border-white/10 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
@@ -367,14 +370,14 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
             </div>
           </div>
 
-          {/* 5. Bottom Action Row matching Image 1 */}
-          <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+          {/* 5. Bottom Action Row */}
+          <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
             {/* Left: Source Code Button */}
             <a
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-white px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider inline-flex items-center gap-2 transition-all hover:border-white/30 cursor-pointer shadow-sm"
+              className="rounded-xl border border-slate-300 dark:border-white/15 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-800 dark:text-white px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider inline-flex items-center gap-2 transition-all hover:border-slate-400 dark:hover:border-white/30 cursor-pointer shadow-sm"
             >
               <Github className="w-4 h-4" />
               <span>SOURCE CODE</span>
@@ -384,7 +387,7 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
             <button
               type="button"
               onClick={onClose}
-              className="text-[#8E97A0] hover:text-white text-xs font-medium uppercase tracking-wider transition-colors cursor-pointer"
+              className="text-slate-500 dark:text-[#8E97A0] hover:text-black dark:hover:text-white text-xs font-medium uppercase tracking-wider transition-colors cursor-pointer"
             >
               Close
             </button>

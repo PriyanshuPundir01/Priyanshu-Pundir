@@ -12,11 +12,25 @@ export const ContactButton: React.FC<ContactButtonProps> = ({
   href = '#contact',
   className = '',
 }) => {
-  const content = (
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (href) {
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.hash = href;
+      }
+    }
+  };
+
+  return (
     <motion.button
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.96 }}
-      onClick={onClick}
+      onClick={handleClick}
+      aria-label="Contact Me - Scroll to contact details"
       className={`relative inline-flex items-center justify-center rounded-full text-white font-medium uppercase tracking-widest transition-all duration-300 select-none px-8 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 text-xs sm:text-sm md:text-base cursor-pointer shadow-lg hover:shadow-[0_0_25px_rgba(182,0,168,0.5)] ${className}`}
       style={{
         background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
@@ -28,16 +42,6 @@ export const ContactButton: React.FC<ContactButtonProps> = ({
       <span>Contact Me</span>
     </motion.button>
   );
-
-  if (href && !onClick) {
-    return (
-      <a href={href} className="inline-block no-underline">
-        {content}
-      </a>
-    );
-  }
-
-  return content;
 };
 
 export default ContactButton;

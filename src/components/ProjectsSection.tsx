@@ -400,10 +400,10 @@ const ProjectCard: React.FC<CardProps> = ({
         style={{
           scale,
         }}
-        className="w-full h-full rounded-[36px] sm:rounded-[48px] md:rounded-[56px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-2xl flex flex-col justify-between overflow-hidden"
+        className="w-full h-full rounded-[36px] sm:rounded-[48px] md:rounded-[56px] border-2 border-slate-300/80 dark:border-[#D7E2EA] bg-white dark:bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-xl dark:shadow-2xl flex flex-col justify-between overflow-hidden transition-colors duration-300"
       >
         {/* Top Header Row matching Image 2: Number + Title (Subtitle) + Tech Stack + Action Buttons */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 sm:pb-4 border-b border-white/15 shrink-0">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 sm:pb-4 border-b border-black/10 dark:border-white/15 shrink-0">
           <div className="flex flex-col gap-2 min-w-0">
             <div className="flex items-baseline gap-3 sm:gap-4 flex-wrap">
               {/* Glowing Purple Number matching Image 2 */}
@@ -416,10 +416,10 @@ const ProjectCard: React.FC<CardProps> = ({
 
               {/* Title & Subtitle in parentheses matching Image 2 */}
               <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-                <h3 className="text-white uppercase font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight leading-none">
+                <h3 className="text-slate-900 dark:text-white uppercase font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight leading-none transition-colors">
                   {project.name}
                 </h3>
-                <span className="text-[#8E97A0] uppercase font-mono text-xs sm:text-sm tracking-wider">
+                <span className="text-slate-500 dark:text-[#8E97A0] uppercase font-mono text-xs sm:text-sm tracking-wider">
                   ({project.subtitle})
                 </span>
               </div>
@@ -430,7 +430,7 @@ const ProjectCard: React.FC<CardProps> = ({
               {project.techStack.map((tech) => (
                 <span
                   key={tech}
-                  className="px-2.5 py-0.5 rounded-md text-[11px] font-mono bg-[#141822] text-[#8E97A0] border border-white/10"
+                  className="px-2.5 py-0.5 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#141822] text-slate-700 dark:text-[#8E97A0] border border-slate-200 dark:border-white/10"
                 >
                   {tech}
                 </span>
@@ -445,7 +445,7 @@ const ProjectCard: React.FC<CardProps> = ({
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs uppercase font-semibold tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
+              className="rounded-full border border-black/15 dark:border-white/20 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-slate-800 dark:text-white px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs uppercase font-semibold tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
             >
               <Github className="w-3.5 h-3.5 opacity-80" />
               <span>GITHUB</span>
@@ -468,10 +468,10 @@ const ProjectCard: React.FC<CardProps> = ({
             <button
               type="button"
               onClick={() => onOpenSpec(project)}
-              className="rounded-full border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-white px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs uppercase font-mono font-bold tracking-wider transition-all duration-200 inline-flex items-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+              className="rounded-full border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 hover:text-purple-800 dark:hover:text-white px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs uppercase font-mono font-bold tracking-wider transition-all duration-200 inline-flex items-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]"
               title={`View ${project.name} Architecture Spec & Live Telemetry`}
             >
-              <FileCode2 className="w-3.5 h-3.5 text-purple-400" />
+              <FileCode2 className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
               <span>SPEC</span>
             </button>
           </div>
@@ -483,7 +483,7 @@ const ProjectCard: React.FC<CardProps> = ({
           <div className="md:col-span-5 flex flex-col gap-3.5 sm:gap-5 md:gap-6 h-full min-h-0 justify-between">
             <div
               onClick={() => onPreviewImage(project.col1Img1, `${project.name} - View 1`)}
-              className="relative overflow-hidden rounded-[22px] sm:rounded-[28px] md:rounded-[34px] border border-white/15 bg-[#141414] flex-1 min-h-0 group cursor-pointer shadow-lg"
+              className="relative overflow-hidden rounded-[22px] sm:rounded-[28px] md:rounded-[34px] border border-black/10 dark:border-white/15 bg-slate-100 dark:bg-[#141414] flex-1 min-h-0 group cursor-pointer shadow-lg"
             >
               <img
                 src={project.col1Img1}
@@ -500,7 +500,7 @@ const ProjectCard: React.FC<CardProps> = ({
 
             <div
               onClick={() => onPreviewImage(project.col1Img2, `${project.name} - View 2`)}
-              className="relative overflow-hidden rounded-[22px] sm:rounded-[28px] md:rounded-[34px] border border-white/15 bg-[#141414] flex-1 min-h-0 group cursor-pointer shadow-lg"
+              className="relative overflow-hidden rounded-[22px] sm:rounded-[28px] md:rounded-[34px] border border-black/10 dark:border-white/15 bg-slate-100 dark:bg-[#141414] flex-1 min-h-0 group cursor-pointer shadow-lg"
             >
               <img
                 src={project.col1Img2}
@@ -519,7 +519,7 @@ const ProjectCard: React.FC<CardProps> = ({
           {/* Right Column (7 of 12 columns): 1 prominent hero image matching left column height */}
           <div
             onClick={() => onPreviewImage(project.col2Img, `${project.name} - Main View`)}
-            className="md:col-span-7 relative overflow-hidden rounded-[26px] sm:rounded-[32px] md:rounded-[40px] border border-white/15 bg-[#141414] h-full min-h-0 group cursor-pointer shadow-2xl flex items-center justify-center"
+            className="md:col-span-7 relative overflow-hidden rounded-[26px] sm:rounded-[32px] md:rounded-[40px] border border-black/10 dark:border-white/15 bg-slate-100 dark:bg-[#141414] h-full min-h-0 group cursor-pointer shadow-2xl flex items-center justify-center"
           >
             <img
               src={project.col2Img}
@@ -546,7 +546,7 @@ export const ProjectsSection: React.FC = () => {
   return (
     <section
       id="projects"
-      className="bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 relative z-10 px-4 sm:px-6 md:px-10 pt-20 sm:pt-24 md:pt-28 pb-32"
+      className="bg-[#F1F5F9] dark:bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 relative z-10 px-4 sm:px-6 md:px-10 pt-20 sm:pt-24 md:pt-28 pb-32 transition-colors duration-300"
     >
       {/* Heading: "Project" */}
       <FadeIn delay={0} y={40} className="w-full text-center mb-14 sm:mb-18 md:mb-24">

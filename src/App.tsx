@@ -7,6 +7,7 @@ import ProjectsSection from './components/ProjectsSection';
 import FooterSection from './components/FooterSection';
 import ResumeModal from './components/ResumeModal';
 import ProjectInquiryModal from './components/ProjectInquiryModal';
+import { ThemeProvider } from './context/ThemeContext';
 
 export const App: React.FC = () => {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
@@ -18,48 +19,59 @@ export const App: React.FC = () => {
     setIsInquiryModalOpen(true);
   };
 
+  const handleScrollToContact = () => {
+    const contactElem = document.getElementById('contact');
+    if (contactElem) {
+      contactElem.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.location.hash = 'contact';
+    }
+  };
+
   return (
-    <div
-      className="bg-[#0C0C0C] text-[#D7E2EA] font-['Kanit',sans-serif] min-h-screen selection:bg-[#B600A8]/30 selection:text-white"
-      style={{ overflowX: 'clip' }}
-    >
-      {/* 1. Hero Section */}
-      <HeroSection
-        onResumeClick={() => setIsResumeModalOpen(true)}
-        onContactClick={() => handleOpenInquiry()}
-      />
+    <ThemeProvider>
+      <div
+        className="bg-[#FAFAFA] dark:bg-[#0C0C0C] text-[#18181B] dark:text-[#D7E2EA] font-['Kanit',sans-serif] min-h-screen selection:bg-[#B600A8]/30 selection:text-white transition-colors duration-300"
+        style={{ overflowX: 'clip' }}
+      >
+        {/* 1. Hero Section */}
+        <HeroSection
+          onResumeClick={() => setIsResumeModalOpen(true)}
+          onContactClick={handleScrollToContact}
+        />
 
-      {/* 2. Tech Stack Marquee Section */}
-      <MarqueeSection />
+        {/* 2. Tech Stack Marquee Section */}
+        <MarqueeSection />
 
-      {/* 3. About Section */}
-      <AboutSection onContactClick={() => handleOpenInquiry()} />
+        {/* 3. About Section */}
+        <AboutSection onContactClick={handleScrollToContact} />
 
-      {/* 4. Services Section with Direct Inquire Trigger */}
-      <ServicesSection onServiceSelect={(serviceName) => handleOpenInquiry(serviceName)} />
+        {/* 4. Services Section with Direct Inquire Trigger */}
+        <ServicesSection onServiceSelect={(serviceName) => handleOpenInquiry(serviceName)} />
 
-      {/* 5. Projects Section */}
-      <ProjectsSection />
+        {/* 5. Projects Section */}
+        <ProjectsSection />
 
-      {/* Footer / Contact Anchor */}
-      <FooterSection
-        onResumeClick={() => setIsResumeModalOpen(true)}
-        onInquiryClick={() => handleOpenInquiry()}
-      />
+        {/* Footer / Contact Anchor */}
+        <FooterSection
+          onResumeClick={() => setIsResumeModalOpen(true)}
+          onInquiryClick={() => handleOpenInquiry()}
+        />
 
-      {/* Interactive In-Portfolio Resume Modal with Download */}
-      <ResumeModal
-        isOpen={isResumeModalOpen}
-        onClose={() => setIsResumeModalOpen(false)}
-      />
+        {/* Interactive In-Portfolio Resume Modal with Download */}
+        <ResumeModal
+          isOpen={isResumeModalOpen}
+          onClose={() => setIsResumeModalOpen(false)}
+        />
 
-      {/* Interactive Project Inquiry Form Modal with PDF Receipt */}
-      <ProjectInquiryModal
-        isOpen={isInquiryModalOpen}
-        onClose={() => setIsInquiryModalOpen(false)}
-        initialService={selectedInquiryService}
-      />
-    </div>
+        {/* Interactive Project Inquiry Form Modal with PDF Receipt */}
+        <ProjectInquiryModal
+          isOpen={isInquiryModalOpen}
+          onClose={() => setIsInquiryModalOpen(false)}
+          initialService={selectedInquiryService}
+        />
+      </div>
+    </ThemeProvider>
   );
 };
 

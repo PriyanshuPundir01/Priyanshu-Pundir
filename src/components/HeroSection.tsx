@@ -2,6 +2,7 @@ import React from 'react';
 import FadeIn from './FadeIn';
 import Magnet from './Magnet';
 import ContactButton from './ContactButton';
+import ThemeToggle from './ThemeToggle';
 
 interface HeroSectionProps {
   onResumeClick?: () => void;
@@ -20,11 +21,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onResumeClick, onConta
   return (
     <section
       id="hero"
-      className="relative h-screen w-full flex flex-col justify-between overflow-x-clip bg-[#0C0C0C] select-none"
+      className="relative h-screen w-full flex flex-col justify-between overflow-x-clip bg-[#F8FAFC] dark:bg-[#0C0C0C] transition-colors duration-300 select-none"
     >
       {/* 1. Navbar */}
       <FadeIn delay={0} y={-20} className="w-full z-20">
-        <header className="w-full px-6 md:px-10 pt-6 md:pt-8 flex justify-between items-center">
+        <header className="w-full px-6 md:px-10 pt-6 md:pt-8 flex justify-between items-center gap-2">
           {navLinks.map((link) => {
             if (link.isResume && onResumeClick) {
               return (
@@ -33,20 +34,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onResumeClick, onConta
                   key={link.label}
                   type="button"
                   onClick={onResumeClick}
-                  className="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] transition-opacity duration-200 hover:opacity-70 cursor-pointer bg-transparent border-none p-0"
+                  className="text-[#0F172A] dark:text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] transition-colors duration-200 hover:opacity-70 cursor-pointer bg-transparent border-none p-0"
                 >
                   {link.label}
                 </button>
               );
             }
-            if (link.isContact && onContactClick) {
+            if (link.isContact) {
               return (
                 <button
                   id="contact-nav-btn"
                   key={link.label}
                   type="button"
-                  onClick={onContactClick}
-                  className="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] transition-opacity duration-200 hover:opacity-70 cursor-pointer bg-transparent border-none p-0"
+                  onClick={
+                    onContactClick ||
+                    (() => {
+                      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                    })
+                  }
+                  className="text-[#0F172A] dark:text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] transition-colors duration-200 hover:opacity-70 cursor-pointer bg-transparent border-none p-0"
                 >
                   {link.label}
                 </button>
@@ -56,12 +62,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onResumeClick, onConta
               <a
                 key={link.label}
                 href={link.href}
-                className="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] transition-opacity duration-200 hover:opacity-70"
+                className="text-[#0F172A] dark:text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] transition-colors duration-200 hover:opacity-70"
               >
                 {link.label}
               </a>
             );
           })}
+
+          {/* Navbar Theme Switch */}
+          <ThemeToggle className="inline-flex" />
         </header>
       </FadeIn>
 
@@ -87,7 +96,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onResumeClick, onConta
             <img
               src="/assets/priyanshu_avatar.png"
               alt="Priyanshu Pundir - Full Stack Developer"
-              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.9)] filter contrast-105 pointer-events-auto"
+              className="w-full h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_25px_60px_rgba(0,0,0,0.9)] filter contrast-105 pointer-events-auto"
               loading="eager"
             />
           </Magnet>
@@ -99,7 +108,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onResumeClick, onConta
         {/* Left text */}
         <FadeIn delay={0.35} y={20}>
           <p
-            className="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug max-w-[160px] sm:max-w-[220px] md:max-w-[260px]"
+            className="text-[#0F172A] dark:text-[#D7E2EA] font-light uppercase tracking-wide leading-snug max-w-[160px] sm:max-w-[220px] md:max-w-[260px] transition-colors duration-200"
             style={{ fontSize: 'clamp(0.75rem, 1.4vw, 1.5rem)' }}
           >
             a full stack developer driven by crafting scalable and secure solutions

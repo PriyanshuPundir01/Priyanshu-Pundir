@@ -10,6 +10,10 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {
@@ -17,10 +21,31 @@ body,
   color: #D7E2EA;
   font-family: 'Kanit', sans-serif;
   min-height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark,
+html.dark body,
+html.dark #root {
+  background-color: #0C0C0C;
+  color: #D7E2EA;
+}
+
+html.light,
+html.light body,
+html.light #root {
+  background-color: #F8FAFC;
+  color: #0F172A;
 }
 
 .hero-heading {
   background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.light .hero-heading {
+  background: linear-gradient(180deg, #0F172A 0%, #475569 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

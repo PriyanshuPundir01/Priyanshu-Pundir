@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bg-[#0C0C0C] text-[#D7E2EA]">
+<html lang="en" class="dark">
 
 <head>
   <meta charset="UTF-8" />
@@ -8,6 +8,18 @@
   <title>Priyanshu Pundir -- Full Stack Developer</title>
   <meta name="description"
     content="Priyanshu Pundir -- Full Stack Developer skilled in Java, JavaScript (React, Angular), Python, and SQL with hands-on experience across the SDLC, AI RAG platforms, and secure architectures." />
+  <script>
+    try {
+      const saved = localStorage.getItem('portfolio-theme') || 'dark';
+      if (saved === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    } catch (e) {}
+  </script>
   <!-- Google Fonts Kanit 300-900 -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +30,7 @@
 
 <body
   class="bg-[#0C0C0C] text-[#D7E2EA] font-['Kanit',sans-serif] antialiased selection:bg-[#B600A8]/30 selection:text-white">
-  <div id="root" class="bg-[#0C0C0C]"></div>
+  <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

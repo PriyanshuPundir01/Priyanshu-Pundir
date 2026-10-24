@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 
 interface TechItem {
   name: string;
@@ -255,11 +255,159 @@ const ROW_2_TECHS: TechItem[] = [
 const row1Items = [...ROW_1_TECHS, ...ROW_1_TECHS];
 const row2Items = [...ROW_2_TECHS, ...ROW_2_TECHS];
 
+// ============================================================================
+// TECH STACK CARD WITH 3D PULL & WEIGHTED EDGE EFFECT
+// ============================================================================
+const TechStackCard: React.FC<{ tech: TechItem }> = ({ tech }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [pull, setPull] = useState({
+    rotateX: 0,
+    rotateY: 0,
+    normX: 0,
+    normY: 0,
+    edgeX: 50,
+    edgeY: 50,
+    isHovered: false,
+  });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Normalized relative position from center (-1 to +1)
+    const normX = (x - centerX) / centerX;
+    const normY = (y - centerY) / centerY;
+
+    // 3D Pull effect: tilts toward the cursor position with physical weight
+    const rotateX = -normY * 11;
+    const rotateY = normX * 13;
+
+    // Edge coordinates for weighted edge illumination (0% to 100%)
+    const edgeX = (x / rect.width) * 100;
+    const edgeY = (y / rect.height) * 100;
+
+    setPull({
+      rotateX,
+      rotateY,
+      normX,
+      normY,
+      edgeX,
+      edgeY,
+      isHovered: true,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setPull({
+      rotateX: 0,
+      rotateY: 0,
+      normX: 0,
+      normY: 0,
+      edgeX: 50,
+      edgeY: 50,
+      isHovered: false,
+    });
+  };
+
+  return (
+    <div
+      style={{ perspective: '1000px' }}
+      className="flex-shrink-0"
+    >
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="group relative flex items-center gap-3.5 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 h-[72px] sm:h-[76px] rounded-2xl bg-white/95 dark:bg-[#13161C]/90 hover:bg-white dark:hover:bg-[#1A1F29] border border-slate-200/90 dark:border-white/[0.08] flex-shrink-0 cursor-default select-none will-change-transform shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-none transition-colors duration-200"
+        style={{
+          transform: pull.isHovered
+            ? `rotateX(${pull.rotateX}deg) rotateY(${pull.rotateY}deg) translateZ(14px) translateY(-3px) scale3d(1.025, 1.025, 1.025)`
+            : 'rotateX(0deg) rotateY(0deg) translateZ(0px) translateY(0px) scale3d(1, 1, 1)',
+          transformStyle: 'preserve-3d',
+          transition: pull.isHovered
+            ? 'transform 0.08s ease-out, box-shadow 0.12s ease-out, border-color 0.2s ease-out'
+            : 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease-out',
+          boxShadow: pull.isHovered
+            ? `${-pull.normX * 9}px ${12 - pull.normY * 6}px 26px rgba(0, 0, 0, 0.75), 0 0 22px ${tech.glowColor}`
+            : undefined,
+          borderColor: pull.isHovered ? 'rgba(255, 255, 255, 0.24)' : undefined,
+        }}
+      >
+        {/* Dynamic Weighted Edge Rim Highlight (activates the edge closest to cursor) */}
+        <div
+          className="pointer-events-none absolute -inset-[1px] rounded-2xl transition-opacity duration-200 z-10"
+          style={{
+            opacity: pull.isHovered ? 1 : 0,
+            background: `radial-gradient(circle 90px at ${pull.edgeX}% ${pull.edgeY}%, ${tech.color}, rgba(255, 255, 255, 0.45) 25%, transparent 75%)`,
+            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            maskComposite: 'exclude',
+            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            WebkitMaskComposite: 'xor',
+            padding: '1.5px',
+          }}
+        />
+
+        {/* Dynamic Internal Weighted Halo */}
+        <div
+          className="absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none overflow-hidden z-0"
+          style={{
+            opacity: pull.isHovered ? 1 : 0,
+            background: `radial-gradient(circle 120px at ${pull.edgeX}% ${pull.edgeY}%, ${tech.glowColor.replace('0.35', '0.22')}, transparent 75%)`,
+          }}
+        />
+
+        {/* Top-Edge Specular Bevel Highlight */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent z-20" />
+
+        {/* Icon Container with subtle brand tint */}
+        <div
+          className="relative z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border border-black/10 dark:border-white/10 shrink-0 transition-transform duration-300 group-hover:scale-110"
+          style={{
+            backgroundColor: `${tech.color}15`,
+            borderColor: `${tech.color}40`,
+            transform: pull.isHovered ? 'translateZ(10px)' : 'translateZ(0px)',
+            transition: 'transform 0.15s ease-out',
+          }}
+        >
+          {tech.icon(tech.color)}
+        </div>
+
+        {/* Text & Category Pill */}
+        <div
+          className="relative z-10 flex flex-col items-start pr-1 min-w-0"
+          style={{
+            transform: pull.isHovered ? 'translateZ(12px)' : 'translateZ(0px)',
+            transition: 'transform 0.15s ease-out',
+          }}
+        >
+          <span className="font-['Kanit',sans-serif] font-bold text-slate-900 dark:text-white text-base sm:text-lg tracking-wide group-hover:text-slate-950 dark:group-hover:text-white transition-colors whitespace-nowrap">
+            {tech.name}
+          </span>
+          <span
+            className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border mt-0.5 font-semibold whitespace-nowrap"
+            style={{
+              backgroundColor: `${tech.color}10`,
+              borderColor: `${tech.color}30`,
+              color: tech.color,
+            }}
+          >
+            {tech.category}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const MarqueeSection: React.FC = () => {
   return (
     <section
       id="tech-stack"
-      className="relative bg-[#0C0C0C] pt-20 sm:pt-28 md:pt-36 pb-16 sm:pb-24 overflow-hidden w-full select-none"
+      className="relative bg-[#F8FAFC] dark:bg-[#0C0C0C] pt-20 sm:pt-28 md:pt-36 pb-16 sm:pb-24 overflow-hidden w-full select-none transition-colors duration-300"
     >
       {/* Background Ambient Glows */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#00D2FF]/5 rounded-full blur-[140px] pointer-events-none" />
@@ -268,132 +416,56 @@ export const MarqueeSection: React.FC = () => {
       {/* Cyber Section Header */}
       <div className="max-w-7xl mx-auto px-6 mb-12 sm:mb-16 text-center flex flex-col items-center">
         {/* Futuristic Status Pill */}
-        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md mb-4 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-200/70 dark:bg-white/[0.03] border border-slate-300 dark:border-white/10 backdrop-blur-md mb-4 shadow-[0_0_20px_rgba(0,0,0,0.06)] dark:shadow-[0_0_20px_rgba(0,0,0,0.5)]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D2FF] opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00D2FF]" />
           </span>
-          <span className="text-[11px] font-mono tracking-widest uppercase text-[#A0AEC0]">
+          <span className="text-[11px] font-mono tracking-widest uppercase text-slate-600 dark:text-[#A0AEC0]">
             TECH STACK MATRIX // PRODUCTION TOOLKIT
           </span>
         </div>
 
         {/* Section Heading */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-3">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-3">
           Technologies &amp; Frameworks
         </h2>
 
         {/* Subtitle */}
-        <p className="text-[#8E97A0] max-w-xl text-sm sm:text-base font-light tracking-wide">
+        <p className="text-slate-600 dark:text-[#8E97A0] max-w-xl text-sm sm:text-base font-light tracking-wide">
           Engineered for scale, security, and velocity across modern web platforms, full-stack architectures, and AI-driven vector workflows.
         </p>
       </div>
 
-      {/* Marquee Wrapper with Seamless Edge Fade Masks */}
-      <div className="relative w-full overflow-hidden flex flex-col gap-4 sm:gap-6">
+      {/* Marquee Wrapper with Ample Vertical Clearance (prevents upper edge clipping on 3D pull/hover) */}
+      <div className="relative w-full overflow-hidden flex flex-col gap-6 sm:gap-8 py-5 sm:py-7">
         {/* Left & Right Soft Fade Masks */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-48 bg-gradient-to-r from-[#0C0C0C] via-[#0C0C0C]/80 to-transparent z-20" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-48 bg-gradient-to-l from-[#0C0C0C] via-[#0C0C0C]/80 to-transparent z-20" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-48 bg-gradient-to-r from-[#F8FAFC] via-[#F8FAFC]/80 dark:from-[#0C0C0C] dark:via-[#0C0C0C]/80 to-transparent z-20" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-48 bg-gradient-to-l from-[#F8FAFC] via-[#F8FAFC]/80 dark:from-[#0C0C0C] dark:via-[#0C0C0C]/80 to-transparent z-20" />
 
         {/* ============================================================== */}
         {/* ROW 1: Scrolling Left (Frontend, Core Languages, Web)          */}
+        {/* With vertical headroom so 3D lift is 100% visible              */}
         {/* ============================================================== */}
-        <div className="flex animate-marquee-left gap-4 sm:gap-5">
+        <div className="flex animate-marquee-left gap-4 sm:gap-5 py-3 sm:py-4">
           {row1Items.map((tech, idx) => (
-            <div
+            <TechStackCard
               key={`r1-${tech.name}-${idx}`}
-              className="group relative flex items-center gap-3.5 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl bg-[#13161C]/80 hover:bg-[#1A1F29] border border-white/[0.08] hover:border-white/20 transition-all duration-300 flex-shrink-0 cursor-default shadow-lg hover:shadow-2xl hover:-translate-y-1"
-              style={{
-                boxShadow: `0 4px 20px rgba(0, 0, 0, 0.4)`,
-              }}
-            >
-              {/* Dynamic Glow Halo on Hover */}
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at center, ${tech.glowColor} 0%, transparent 70%)`,
-                }}
-              />
-
-              {/* Icon Container with subtle brand tint */}
-              <div
-                className="relative z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border border-white/10 shrink-0 transition-transform duration-300 group-hover:scale-110"
-                style={{
-                  backgroundColor: `${tech.color}15`,
-                  borderColor: `${tech.color}40`,
-                }}
-              >
-                {tech.icon(tech.color)}
-              </div>
-
-              {/* Text & Category Pill */}
-              <div className="relative z-10 flex flex-col items-start pr-1">
-                <span className="font-['Kanit',sans-serif] font-bold text-white text-base sm:text-lg tracking-wide group-hover:text-white transition-colors">
-                  {tech.name}
-                </span>
-                <span
-                  className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border mt-0.5"
-                  style={{
-                    backgroundColor: `${tech.color}10`,
-                    borderColor: `${tech.color}30`,
-                    color: tech.color,
-                  }}
-                >
-                  {tech.category}
-                </span>
-              </div>
-            </div>
+              tech={tech}
+            />
           ))}
         </div>
 
         {/* ============================================================== */}
         {/* ROW 2: Scrolling Right (AI, RAG, Backend, DBs, DevOps)         */}
+        {/* With vertical headroom so 3D lift is 100% visible              */}
         {/* ============================================================== */}
-        <div className="flex animate-marquee-right gap-4 sm:gap-5">
+        <div className="flex animate-marquee-right gap-4 sm:gap-5 py-3 sm:py-4">
           {row2Items.map((tech, idx) => (
-            <div
+            <TechStackCard
               key={`r2-${tech.name}-${idx}`}
-              className="group relative flex items-center gap-3.5 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl bg-[#13161C]/80 hover:bg-[#1A1F29] border border-white/[0.08] hover:border-white/20 transition-all duration-300 flex-shrink-0 cursor-default shadow-lg hover:shadow-2xl hover:-translate-y-1"
-              style={{
-                boxShadow: `0 4px 20px rgba(0, 0, 0, 0.4)`,
-              }}
-            >
-              {/* Dynamic Glow Halo on Hover */}
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at center, ${tech.glowColor} 0%, transparent 70%)`,
-                }}
-              />
-
-              {/* Icon Container with subtle brand tint */}
-              <div
-                className="relative z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border border-white/10 shrink-0 transition-transform duration-300 group-hover:scale-110"
-                style={{
-                  backgroundColor: `${tech.color}15`,
-                  borderColor: `${tech.color}40`,
-                }}
-              >
-                {tech.icon(tech.color)}
-              </div>
-
-              {/* Text & Category Pill */}
-              <div className="relative z-10 flex flex-col items-start pr-1">
-                <span className="font-['Kanit',sans-serif] font-bold text-white text-base sm:text-lg tracking-wide group-hover:text-white transition-colors">
-                  {tech.name}
-                </span>
-                <span
-                  className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md border mt-0.5"
-                  style={{
-                    backgroundColor: `${tech.color}10`,
-                    borderColor: `${tech.color}30`,
-                    color: tech.color,
-                  }}
-                >
-                  {tech.category}
-                </span>
-              </div>
-            </div>
+              tech={tech}
+            />
           ))}
         </div>
       </div>
