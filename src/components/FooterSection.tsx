@@ -3,7 +3,6 @@ import FadeIn from './FadeIn';
 import { MapPin, Mail, Phone, Github, ArrowRight, ArrowUp, FileText } from 'lucide-react';
 import ProjectInquiryModal from './ProjectInquiryModal';
 import ResumeModal from './ResumeModal';
-import ThemeToggle from './ThemeToggle';
 
 interface FooterSectionProps {
   onResumeClick?: () => void;
@@ -187,7 +186,6 @@ export const FooterSection: React.FC<FooterSectionProps> = ({
             <p className="text-center sm:text-right hidden md:inline">
               Designed &amp; Engineered with React, Framer Motion &amp; Tailwind CSS
             </p>
-            <ThemeToggle />
             <button
               onClick={scrollToTop}
               className="rounded-full border border-black/15 dark:border-white/20 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-slate-800 dark:text-white px-3.5 py-1.5 text-[11px] uppercase font-medium tracking-wider inline-flex items-center gap-1.5 transition-all hover:border-black/30 dark:hover:border-white/40 cursor-pointer"

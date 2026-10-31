@@ -22,6 +22,11 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
+// ── Security: Input Sanitization ──
+// Strips HTML tags and trims whitespace to prevent XSS in PDF output and mailto links
+const sanitizeInput = (input: string): string =>
+  input.replace(/<[^>]*>/g, '').trim();
+
 export interface ServiceOption {
   id: string;
   number: string;
@@ -243,6 +248,14 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
     receiptServiceName: string
   ) => {
     try {
+      // Security: Sanitize all user-provided content before embedding in PDF
+      const safeName = sanitizeInput(name);
+      const safeEmail = sanitizeInput(workEmail);
+      const safePhone = sanitizeInput(contactNumber);
+      const safeBudget = sanitizeInput(selectedBudget);
+      const safeDesc = sanitizeInput(projectDescription);
+      const safeService = sanitizeInput(receiptServiceName);
+
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -337,7 +350,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       doc.text('Client Name / Org:', 18, y);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(name.trim() || 'Client (Unspecified)', 62, y);
+      doc.text(safeName || 'Client (Unspecified)', 62, y);
 
       y += 7;
       doc.setFont('helvetica', 'normal');
@@ -345,7 +358,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       doc.text('Work Email Address:', 18, y);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(accentPurple[0], accentPurple[1], accentPurple[2]);
-      doc.text(workEmail.trim() || 'Not Provided', 62, y);
+      doc.text(safeEmail || 'Not Provided', 62, y);
 
       y += 7;
       doc.setFont('helvetica', 'normal');
@@ -353,7 +366,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       doc.text('Contact Number / Phone:', 18, y);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(contactNumber.trim() || 'Not Provided', 62, y);
+      doc.text(safePhone || 'Not Provided', 62, y);
 
       y += 14;
 
@@ -374,7 +387,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       doc.text('Service Specification:', 18, y);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(receiptServiceName || defaultService, 62, y);
+      doc.text(safeService || defaultService, 62, y);
 
       y += 7;
       doc.setFont('helvetica', 'normal');
@@ -383,7 +396,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       // Format budget for PDF: replace ₹ with INR to ensure crisp font rendering across standard PDF viewers
-      const formattedPdfBudget = (selectedBudget.trim() || 'Flexible / To be discussed').replace(/₹/g, 'INR ');
+      const formattedPdfBudget = (safeBudget || 'Flexible / To be discussed').replace(/₹/g, 'INR ');
       doc.text(formattedPdfBudget, 62, y);
 
       y += 14;
@@ -401,7 +414,7 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
 
       doc.setFillColor(cardBg[0], cardBg[1], cardBg[2]);
       const splitDesc = doc.splitTextToSize(
-        projectDescription.trim() || 'No additional project description provided.',
+        safeDesc || 'No additional project description provided.',
         170
       );
       const boxHeight = Math.max(30, splitDesc.length * 5.6 + 12);
@@ -458,12 +471,30 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
     e.preventDefault();
     setErrorMessage('');
 
+    // Security: Input length limits to prevent abuse
+    if (name.length > 200) {
+      setErrorMessage('Name must be under 200 characters.');
+      return;
+    }
+    if (workEmail.length > 254) {
+      setErrorMessage('Email must be under 254 characters.');
+      return;
+    }
+    if (contactNumber.length > 30) {
+      setErrorMessage('Phone number must be under 30 characters.');
+      return;
+    }
+    if (projectDescription.length > 5000) {
+      setErrorMessage('Project description must be under 5000 characters.');
+      return;
+    }
+
     // Field Validations
     if (!name.trim()) {
       setErrorMessage('Please enter your full name or company name.');
       return;
     }
-    if (!workEmail.trim() || !workEmail.includes('@')) {
+    if (!workEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(workEmail.trim())) {
       setErrorMessage('Please enter a valid work email address.');
       return;
     }
@@ -494,7 +525,13 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
       console.error('Failed to update receipt sequence in localStorage:', err);
     }
 
-    const finalService = serviceInput.trim() || defaultService;
+    const finalService = sanitizeInput(serviceInput) || defaultService;
+    // Security: Sanitize all user inputs before PDF generation and mailto link
+    const safeName = sanitizeInput(name);
+    const safeEmail = sanitizeInput(workEmail);
+    const safePhone = sanitizeInput(contactNumber);
+    const safeBudget = sanitizeInput(selectedBudget);
+    const safeDescription = sanitizeInput(projectDescription);
 
     // 1. Automatically generate and download official PDF receipt onto user's system
     generateReceiptPDF(currentSeq, finalService);

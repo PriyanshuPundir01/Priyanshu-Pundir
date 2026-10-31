@@ -87,8 +87,13 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
     e.preventDefault();
     if (!commandInput.trim()) return;
 
-    const cmd = commandInput.trim().toLowerCase();
-    const newLogs = [...terminalLogs, `$ ${commandInput}`];
+    const sanitizedCmd = commandInput.slice(0, 100).replace(/<[^>]*>/g, '').trim();
+    if (!sanitizedCmd) {
+      setCommandInput('');
+      return;
+    }
+    const cmd = sanitizedCmd.toLowerCase();
+    const newLogs = [...terminalLogs, `$ ${sanitizedCmd}`];
 
     if (cmd === 'help') {
       newLogs.push('Available commands: help, status, benchmark, clear, inspect');
@@ -103,7 +108,7 @@ export const ProjectSpecModal: React.FC<ProjectSpecModalProps> = ({ project, onC
       setCommandInput('');
       return;
     } else {
-      newLogs.push(`Command not recognized: '${commandInput}'. Type 'help' for options.`);
+      newLogs.push(`Command not recognized: '${sanitizedCmd}'. Type 'help' for options.`);
     }
 
     setTerminalLogs(newLogs);
