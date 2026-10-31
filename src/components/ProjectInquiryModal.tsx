@@ -526,12 +526,6 @@ export const ProjectInquiryModal: React.FC<ProjectInquiryModalProps> = ({
     }
 
     const finalService = sanitizeInput(serviceInput) || defaultService;
-    // Security: Sanitize all user inputs before PDF generation and mailto link
-    const safeName = sanitizeInput(name);
-    const safeEmail = sanitizeInput(workEmail);
-    const safePhone = sanitizeInput(contactNumber);
-    const safeBudget = sanitizeInput(selectedBudget);
-    const safeDescription = sanitizeInput(projectDescription);
 
     // 1. Automatically generate and download official PDF receipt onto user's system
     generateReceiptPDF(currentSeq, finalService);
