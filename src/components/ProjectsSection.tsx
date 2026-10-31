@@ -15,9 +15,9 @@ export interface ProjectItem extends ProjectSpecData {
 const projectsData: ProjectItem[] = [
   {
     number: '01',
-    name: 'Nexus Intelligence',
+    name: 'Nexus Intelligence (NI)',
     category: 'Enterprise AI & Multimodal RAG',
-    subtitle: 'MULTIMODAL RAG KNOWLEDGE PLATFORM',
+    subtitle: 'MULTIMODAL AI KNOWLEDGE HUB',
     impactQuote:
       'Architected a fullstack multimodal RAG platform indexing PDFs, vision OCR diagrams, and YouTube media with ChromaDB vector search and 87–92% semantic retrieval accuracy.',
     techStack: ['Python', 'LangChain', 'Google Gemini', 'ChromaDB', 'PyMuPDF', 'Streamlit', 'Vector Search'],
@@ -26,7 +26,7 @@ const projectsData: ProjectItem[] = [
       'Fullstack enterprise RAG application powered by Google Gemini and ChromaDB. Ingests PDFs, diagrams via Gemini Vision OCR, and YouTube transcripts with grounded, citation-backed answers.',
     language: 'Python / Gemini / Vector RAG',
     githubUrl: 'https://github.com/PriyanshuPundir01/Nexus_Intelligence-NI',
-    liveUrl: 'https://nexus-intelligence-zeta.vercel.app',
+    liveUrl: 'https://nexusintelligence-ni.vercel.app/',
     col1Img1: '/assets/projects/nexus_intelligence_pdf_16x9.png',
     col1Img2: '/assets/projects/nexus_intelligence_core_16x9.jpg',
     col2Img: '/assets/projects/nexus_intelligence_hero_16x9.png',
