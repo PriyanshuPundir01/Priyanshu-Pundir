@@ -15,6 +15,50 @@ export interface ProjectItem extends ProjectSpecData {
 const projectsData: ProjectItem[] = [
   {
     number: '01',
+    name: 'Nexus Intelligence',
+    category: 'Enterprise AI & Multimodal RAG',
+    subtitle: 'MULTIMODAL RAG KNOWLEDGE PLATFORM',
+    impactQuote:
+      'Architected a fullstack multimodal RAG platform indexing PDFs, vision OCR diagrams, and YouTube media with ChromaDB vector search and 87–92% semantic retrieval accuracy.',
+    techStack: ['Python', 'LangChain', 'Google Gemini', 'ChromaDB', 'PyMuPDF', 'Streamlit', 'Vector Search'],
+    demoMode: 'Multimodal Vector Retrieval & Vision OCR',
+    description:
+      'Fullstack enterprise RAG application powered by Google Gemini and ChromaDB. Ingests PDFs, diagrams via Gemini Vision OCR, and YouTube transcripts with grounded, citation-backed answers.',
+    language: 'Python / Gemini / Vector RAG',
+    githubUrl: 'https://github.com/PriyanshuPundir01/Nexus_Intelligence-NI',
+    liveUrl: 'https://nexusintelligence-iota.vercel.app',
+    col1Img1: '/assets/projects/nexus_intelligence_pdf_16x9.png',
+    col1Img2: '/assets/projects/nexus_intelligence_core_16x9.jpg',
+    col2Img: '/assets/projects/nexus_intelligence_hero_16x9.png',
+    architectureStages: [
+      {
+        stage: 'STAGE 01',
+        title: 'Multimodal Document Ingestion',
+        detail:
+          'Extracts verbatim text, tables, and vision-based diagram OCR from PDFs and images with 1,000-character semantic chunking and metadata preservation.',
+      },
+      {
+        stage: 'STAGE 02',
+        title: 'ChromaDB Vector Indexing',
+        detail:
+          'Generates high-dimensional semantic embeddings stored in ChromaDB vector space for sub-50ms cosine similarity lookup.',
+      },
+      {
+        stage: 'STAGE 03',
+        title: 'Grounded Gemini RAG Synthesis',
+        detail:
+          'Retrieves Top-4 context chunks with expandable source verification drawers to eliminate hallucination and guarantee provenance.',
+      },
+    ],
+    telemetryLogs: [
+      '[INGEST] Ingested 42-page technical PDF: 128 semantic chunks indexed.',
+      '[EMBED] ChromaDB vector store: 768-dimensional embeddings active.',
+      '[RETRIEVAL] Top-4 semantic matches resolved in 34ms (Cosine similarity: 0.914).',
+      '[SYNTHESIS] Answer synthesized via Gemini 3.6 Flash with 100% grounded citations.',
+    ],
+  },
+  {
+    number: '02',
     name: 'CryptScale',
     category: 'Cybersecurity & Cryptography',
     subtitle: 'PASSWORD INTELLIGENCE PLATFORM',
@@ -58,7 +102,7 @@ const projectsData: ProjectItem[] = [
     ],
   },
   {
-    number: '02',
+    number: '03',
     name: 'MONEYMATRIX',
     category: 'Financial Engineering & Algorithms',
     subtitle: 'ALGORITHMIC CORE BANKING ENGINE',
@@ -71,7 +115,7 @@ const projectsData: ProjectItem[] = [
     language: 'C / Algorithms',
     githubUrl: 'https://github.com/PriyanshuPundir01/MONEYMATRIX',
     liveUrl: 'https://moneymatrix-three.vercel.app',
-    col1Img1: '/assets/projects/moneymatrix_ui_16x9.png',
+    col1Img1: '/assets/projects/moneymatrix_account_16x9.png',
     col1Img2: '/assets/projects/moneymatrix_user_dash_16x9.png',
     col2Img: '/assets/projects/moneymatrix_dashboard_16x9.png',
     architectureStages: [
@@ -102,7 +146,7 @@ const projectsData: ProjectItem[] = [
     ],
   },
   {
-    number: '03',
+    number: '04',
     name: 'Automotive Hub',
     category: 'Automotive Systems & Full-Stack UI',
     subtitle: 'VEHICLE DISCOVERY & TELEMETRY PORTAL',
@@ -115,9 +159,9 @@ const projectsData: ProjectItem[] = [
     language: 'HTML5 / JS / Tailwind',
     githubUrl: 'https://github.com/PriyanshuPundir01/Automotive_Hub',
     liveUrl: 'https://automotive-hub-two.vercel.app',
-    col1Img1: '/assets/projects/automotive_catalogue_16x9.png',
+    col1Img1: '/assets/projects/automotive_order_16x9.png',
     col1Img2: '/assets/projects/automotive_verticals_16x9.png',
-    col2Img: '/assets/projects/automotive_home_16x9.png',
+    col2Img: '/assets/projects/automotive_catalogue_16x9.png',
     architectureStages: [
       {
         stage: 'STAGE 01',
@@ -146,7 +190,7 @@ const projectsData: ProjectItem[] = [
     ],
   },
   {
-    number: '04',
+    number: '05',
     name: 'Sangeet',
     category: 'Media Streaming & DSP Audio',
     subtitle: 'MUSIC STREAMING & AUDIO ENGINE',
@@ -190,7 +234,7 @@ const projectsData: ProjectItem[] = [
     ],
   },
   {
-    number: '05',
+    number: '06',
     name: 'CyberSentinel',
     category: 'Security & Auth',
     subtitle: 'AUTONOMOUS INTRUSION DETECTION SYSTEM',
@@ -233,7 +277,7 @@ const projectsData: ProjectItem[] = [
     ],
   },
   {
-    number: '06',
+    number: '07',
     name: 'ShadowTrace',
     category: 'Endpoint Security & Telemetry',
     subtitle: 'REAL-TIME TELEMETRY & TERMINAL UI',
@@ -276,49 +320,6 @@ const projectsData: ProjectItem[] = [
     ],
   },
   {
-    number: '07',
-    name: 'FullStack Chatbot',
-    category: 'Conversational AI & LLMs',
-    subtitle: 'CONVERSATIONAL AI ASSISTANT PLATFORM',
-    impactQuote:
-      'Engineered streaming LLM response orchestration with vector context retrieval and stateful session memory with <250ms TTFT.',
-    techStack: ['TypeScript', 'React', 'Node.js', 'Tailwind CSS', 'REST APIs', 'LangChain'],
-    demoMode: 'Streaming RAG Pipeline & Session State',
-    description:
-      'Full-stack conversational chatbot application architected with TypeScript, stateful session memory, streaming AI responses, and responsive frontend UI.',
-    language: 'TypeScript / React',
-    githubUrl: 'https://github.com/PriyanshuPundir01/FullStack_Chatbot_Task_Priyanshu_Pundir',
-    col1Img1: '/assets/projects/chatbot_query.png',
-    col1Img2: '/assets/projects/chatbot_admin.png',
-    col2Img: '/assets/projects/chatbot_home.png',
-    architectureStages: [
-      {
-        stage: 'STAGE 01',
-        title: 'Context Vector Retrieval',
-        detail:
-          'Performs cosine similarity search over chunked knowledge embeddings to enrich query prompts with grounded domain context.',
-      },
-      {
-        stage: 'STAGE 02',
-        title: 'Session State Management',
-        detail:
-          'Maintains sliding memory windows with token budget constraints to ensure conversational coherence across multi-turn exchanges.',
-      },
-      {
-        stage: 'STAGE 03',
-        title: 'Server-Sent Events (SSE)',
-        detail:
-          'Streams token deltas directly into the React interface with smooth typing animations and Markdown parsing.',
-      },
-    ],
-    telemetryLogs: [
-      '[SESSION] Conversational state initialized (Memory Window: 10 turns).',
-      '[RETRIEVAL] Found 4 relevant context chunks (Cosine similarity: 0.892).',
-      '[STREAM] Time to First Token (TTFT): 194ms via Server-Sent Events.',
-      '[COMPLETE] Response streamed successfully (412 tokens).',
-    ],
-  },
-  {
     number: '08',
     name: 'N.A.N.U',
     category: 'Multi-Model AI Infrastructure',
@@ -331,6 +332,7 @@ const projectsData: ProjectItem[] = [
       'Fast, modern AI chat application with real-time streaming, quick model switcher (Gemini, Qwen), voice dictation, multimodal file attachments, and deep thinking mode.',
     language: 'JavaScript / Node.js',
     githubUrl: 'https://github.com/PriyanshuPundir01/N.A.N.U',
+    liveUrl: 'https://n-a-n-u.vercel.app',
     col1Img1: '/assets/projects/nanu_interaction_16x9.png',
     col1Img2: '/assets/projects/nanu_auth_16x9.png',
     col2Img: '/assets/projects/nanu_home_16x9.png',
@@ -402,11 +404,11 @@ const ProjectCard: React.FC<CardProps> = ({
         }}
         className="w-full h-full rounded-[36px] sm:rounded-[48px] md:rounded-[56px] border-2 border-slate-300/80 dark:border-[#D7E2EA] bg-white dark:bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-xl dark:shadow-2xl flex flex-col justify-between overflow-hidden transition-colors duration-300"
       >
-        {/* Top Header Row matching Image 2: Number + Title (Subtitle) + Tech Stack + Action Buttons */}
+        {/* Top Header Row: Number + Title (Subtitle) + Tech Stack + Action Buttons */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 sm:pb-4 border-b border-black/10 dark:border-white/15 shrink-0">
           <div className="flex flex-col gap-2 min-w-0">
             <div className="flex items-baseline gap-3 sm:gap-4 flex-wrap">
-              {/* Glowing Purple Number matching Image 2 */}
+              {/* Glowing Purple Number */}
               <span
                 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-[#C084FC] via-[#A855F7] to-[#B600A8] leading-none select-none tracking-tight drop-shadow-[0_0_15px_rgba(192,132,252,0.35)] shrink-0"
                 style={{ fontSize: 'clamp(2.3rem, 5vw, 3.8rem)' }}
@@ -414,7 +416,7 @@ const ProjectCard: React.FC<CardProps> = ({
                 {project.number}
               </span>
 
-              {/* Title & Subtitle in parentheses matching Image 2 */}
+              {/* Title & Subtitle in parentheses */}
               <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
                 <h3 className="text-slate-900 dark:text-white uppercase font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-tight leading-none transition-colors">
                   {project.name}
@@ -425,7 +427,7 @@ const ProjectCard: React.FC<CardProps> = ({
               </div>
             </div>
 
-            {/* Tech Stack Pills matching Image 2 */}
+            {/* Tech Stack Pills */}
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {project.techStack.map((tech) => (
                 <span
@@ -438,7 +440,7 @@ const ProjectCard: React.FC<CardProps> = ({
             </div>
           </div>
 
-          {/* Action buttons matching Image 2: GITHUB + LIVE PROJECT + SPEC */}
+          {/* Action buttons: GITHUB + LIVE PROJECT + SPEC */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 self-start lg:self-center">
             {/* GITHUB Button */}
             <a
@@ -451,7 +453,7 @@ const ProjectCard: React.FC<CardProps> = ({
               <span>GITHUB</span>
             </a>
 
-            {/* LIVE PROJECT Button (Purple filled) matching Image 2 */}
+            {/* LIVE PROJECT Button (Purple filled) */}
             {project.liveUrl && (
               <a
                 href={project.liveUrl}
@@ -464,7 +466,7 @@ const ProjectCard: React.FC<CardProps> = ({
               </a>
             )}
 
-            {/* SPEC Button matching Image 2 */}
+            {/* SPEC Button */}
             <button
               type="button"
               onClick={() => onOpenSpec(project)}
